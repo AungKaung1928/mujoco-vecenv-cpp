@@ -1,0 +1,681 @@
+{
+ "mujoco": "3.12.0",
+ "mujoco_lib": 3012000,
+ "episodes": 25,
+ "observations": 6275,
+ "bit_identical": 6275,
+ "obs_max_abs_diff": 0.0,
+ "reward_max_rel_diff": 0.0,
+ "term_max_abs_diff": 0.0,
+ "info_mismatches": 0,
+ "rows": [
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v1"
+   },
+   "dr": false,
+   "seed": 0,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    100,
+    161,
+    215
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v1"
+   },
+   "dr": false,
+   "seed": 1,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    89,
+    168
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v1"
+   },
+   "dr": false,
+   "seed": 2,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    46,
+    120,
+    163
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2"
+   },
+   "dr": false,
+   "seed": 0,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    100,
+    161,
+    215
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2"
+   },
+   "dr": false,
+   "seed": 1,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    89,
+    168
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2"
+   },
+   "dr": false,
+   "seed": 2,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    46,
+    120,
+    163
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2",
+    "latency": "2"
+   },
+   "dr": false,
+   "seed": 0,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    100,
+    161,
+    215
+   ],
+   "latency": 2,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2",
+    "latency": "2"
+   },
+   "dr": false,
+   "seed": 1,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    89,
+    168
+   ],
+   "latency": 2,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2",
+    "latency": "2"
+   },
+   "dr": false,
+   "seed": 2,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    46,
+    120,
+    163
+   ],
+   "latency": 2,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2",
+    "init_noise": "0.0"
+   },
+   "dr": false,
+   "seed": 0,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    127,
+    151,
+    193
+   ],
+   "latency": 0,
+   "init_noise": 0.0
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2",
+    "init_noise": "0.0"
+   },
+   "dr": false,
+   "seed": 1,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    118,
+    126,
+    176
+   ],
+   "latency": 0,
+   "init_noise": 0.0
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2",
+    "init_noise": "0.0"
+   },
+   "dr": false,
+   "seed": 2,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    46,
+    77,
+    190
+   ],
+   "latency": 0,
+   "init_noise": 0.0
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v1",
+    "action_scale": "0.5",
+    "n_pushes": "5"
+   },
+   "dr": false,
+   "seed": 0,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    99,
+    154,
+    160,
+    193,
+    213
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v1",
+    "action_scale": "0.5",
+    "n_pushes": "5"
+   },
+   "dr": false,
+   "seed": 1,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    88,
+    109,
+    167,
+    218
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v1",
+    "action_scale": "0.5",
+    "n_pushes": "5"
+   },
+   "dr": false,
+   "seed": 2,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    45,
+    46,
+    119,
+    162,
+    216
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact_backlash",
+    "reward": "v2"
+   },
+   "dr": false,
+   "seed": 0,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    100,
+    161,
+    215
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact_backlash",
+    "reward": "v2"
+   },
+   "dr": false,
+   "seed": 1,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    89,
+    168
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact_backlash",
+    "reward": "v2"
+   },
+   "dr": false,
+   "seed": 2,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    46,
+    120,
+    163
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "rollers",
+    "reward": "v1"
+   },
+   "dr": false,
+   "seed": 0,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    100,
+    161,
+    215
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "rollers",
+    "reward": "v1"
+   },
+   "dr": false,
+   "seed": 1,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    89,
+    168
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "rollers",
+    "reward": "v1"
+   },
+   "dr": false,
+   "seed": 2,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    46,
+    120,
+    163
+   ],
+   "latency": 0,
+   "init_noise": 0.02
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2"
+   },
+   "dr": true,
+   "seed": 3,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    121,
+    173
+   ],
+   "latency": 0,
+   "init_noise": 0.22568160239458004
+  },
+  {
+   "kw": {
+    "variant": "groundcontact",
+    "reward": "v2"
+   },
+   "dr": true,
+   "seed": 4,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    59,
+    124,
+    160
+   ],
+   "latency": 1,
+   "init_noise": 0.2640578767725438
+  },
+  {
+   "kw": {
+    "variant": "groundcontact_backlash",
+    "reward": "v1"
+   },
+   "dr": true,
+   "seed": 3,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    56,
+    121,
+    173
+   ],
+   "latency": 0,
+   "init_noise": 0.22568160239458004
+  },
+  {
+   "kw": {
+    "variant": "groundcontact_backlash",
+    "reward": "v1"
+   },
+   "dr": true,
+   "seed": 4,
+   "steps": 250,
+   "obs_max_abs_diff": 0.0,
+   "obs_exact_steps": 251,
+   "obs_compared": 251,
+   "reward_max_rel_diff": 0.0,
+   "term_max_abs_diff": 0.0,
+   "trunk_height_max_abs_diff": 0.0,
+   "upright_cos_max_abs_diff": 0.0,
+   "info_mismatches": [],
+   "done_py": true,
+   "done_cpp": true,
+   "pushes": [
+    59,
+    124,
+    160
+   ],
+   "latency": 1,
+   "init_noise": 0.2640578767725438
+  }
+ ]
+}

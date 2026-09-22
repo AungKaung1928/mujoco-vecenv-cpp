@@ -1,0 +1,11 @@
+build/
+build-*/
+__pycache__/
+*.pyc
+python/vecenv_cpp/*.so
+.pytest_cache/
+runs/*
+!runs/*.json
+# scratch probes, not README numbers
+runs/bench_cpp_*_quick*.json
+runs/*smoke*.json

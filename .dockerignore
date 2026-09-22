@@ -1,0 +1,6 @@
+build/
+build-*/
+.git/
+__pycache__/
+python/vecenv_cpp/*.so
+.pytest_cache/

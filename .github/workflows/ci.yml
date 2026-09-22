@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  OMP_NUM_THREADS: "1"
+  MUJOCO_GL: disable
+  MICRODUCK_RL: ${{ github.workspace }}/microduck-rl
+  MICRODUCK_ASSETS: ${{ github.workspace }}/microduck-rl/assets
+
+jobs:
+  build-and-test:
+    # Release build, C++ suite, Python suite including the equality test
+    # against microduck-rl's environment at a pinned commit.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: AungKaung1928/microduck-rl
+          ref: 8a1a03849ce0c11130e9ad38dc0bd719d0bfb147
+          path: microduck-rl
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install -r requirements.txt
+      - name: Microduck assets (pinned upstream commit, CC BY-SA-NC, never committed)
+        run: cd microduck-rl && ./fetch_assets.sh
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build -j4
+      - run: ./build/vecenv_tests
+      - run: python -m pytest tests/py -q -p no:cacheprovider
+      - name: equality report
+        run: python scripts/contract_report.py
+
+  sanitizers:
+    # The C++ suite under ASan+UBSan and under TSan. The thread-count
+    # independence test is the one TSan is there for.
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sanitize: ["address,undefined", "thread"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: AungKaung1928/microduck-rl
+          ref: 8a1a03849ce0c11130e9ad38dc0bd719d0bfb147
+          path: microduck-rl
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install mujoco==3.12.0 numpy==2.2.6
+      - run: cd microduck-rl && ./fetch_assets.sh
+      - run: cmake -S . -B build-san -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVECENV_SANITIZE=${{ matrix.sanitize }} -DVECENV_BUILD_PYTHON=OFF -DVECENV_BUILD_BENCH=OFF
+      - run: cmake --build build-san -j4
+      - name: lower ASLR entropy for TSan (recent kernels map above what TSan's shadow expects)
+        if: matrix.sanitize == 'thread'
+        run: sudo sysctl vm.mmap_rnd_bits=28
+      - run: ./build-san/vecenv_tests
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          # The suppression covers MuJoCo's own compiler thread pool inside the
+          # uninstrumented libmujoco, nothing from this repo. See tests/cpp/tsan.supp.
+          TSAN_OPTIONS: suppressions=${{ github.workspace }}/tests/cpp/tsan.supp halt_on_error=1

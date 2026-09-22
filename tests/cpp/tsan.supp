@@ -1,0 +1,12 @@
+# ThreadSanitizer suppressions for the C++ suite.
+#
+# MuJoCo's XML compiler runs its own libc++ thread pool inside the prebuilt,
+# uninstrumented libmujoco (mujoco::user::ThreadPool, spawned by mj_loadXML).
+# TSan cannot see the synchronisation inside that library, so it reports the
+# pool's internal mutex as a race between a compiler thread's allocation and
+# another's lock. Nothing from this repo is on those stacks.
+#
+# Everything this repo compiles is instrumented and is NOT suppressed: the
+# VecEnv worker pool, the generation counter, the shared action/observation
+# buffers. A race there fails the build.
+race:libmujoco
