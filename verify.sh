@@ -40,7 +40,9 @@ hr "2/4  C++ suite -- contract, DR, thread-count independence, RNG, numpy arithm
 ./build/vecenv_tests || exit 1
 
 hr "3/4  Python suite -- equality against microduck-rl's env, PCG64 vs numpy, the drop-in"
-"$PY" -m pytest tests/py -q -p no:cacheprovider || exit 1
+# PYTHONPATH is dropped: a sourced ROS 2 setup.bash puts launch_testing on it, which
+# registers a pytest plugin that fails to import; conftest.py sets sys.path itself.
+env -u PYTHONPATH "$PY" -m pytest tests/py -q -p no:cacheprovider || exit 1
 
 hr "4/4  the runs that load the machine"
 cat <<MSG
