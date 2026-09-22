@@ -1,0 +1,23 @@
+{
+  "backend": "cpp",
+  "mode": "env",
+  "variant": "groundcontact",
+  "reward": "v2",
+  "envs_per_thread": 1,
+  "cores": 14,
+  "timestamp": "2026-09-22T21:26:42+0900",
+  "startup_warnings": [],
+  "clean": true,
+  "load1": 0.21,
+  "sustained_threads": 8,
+  "window_s": 20,
+  "rates": [18723.8, 20828.9, 19440, 18965, 18547.8, 17604.8, 16724.2, 16339.1, 16000.6, 15547.2, 13781.6, 13326.9, 13328.8, 15589.9, 16237.9, 14392.6, 15073.9, 14908],
+  "peak": 20828.9,
+  "sustained": 14791.5,
+  "sustained_last2": 14991,
+  "settled": true,
+  "band_windows": 6,
+  "band_low": 13328.8,
+  "band_high": 16237.9,
+  "decay": -0.289857
+}

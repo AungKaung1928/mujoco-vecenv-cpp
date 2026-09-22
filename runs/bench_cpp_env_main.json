@@ -1,0 +1,23 @@
+{
+  "backend": "cpp",
+  "mode": "env",
+  "variant": "groundcontact",
+  "reward": "v2",
+  "envs_per_thread": 1,
+  "cores": 14,
+  "timestamp": "2026-09-22T14:51:12+0900",
+  "startup_warnings": [],
+  "clean": true,
+  "load1": 0.22,
+  "seconds": 20,
+  "ref_seconds": 10,
+  "ref_before": 5581.7,
+  "baseline": 5638.64,
+  "rows": [{"threads": 1, "envs": 1, "env_steps_per_s": 5638.64, "per_thread": 5638.64, "speedup": 1, "efficiency": 1, "ref_after": 5656.49, "ref_drift": 0.0133997}, {"threads": 2, "envs": 2, "env_steps_per_s": 10471.4, "per_thread": 5235.7, "speedup": 1.85708, "efficiency": 0.928541, "ref_after": 5574.66, "ref_drift": -0.00125991}, {"threads": 4, "envs": 4, "env_steps_per_s": 16601, "per_thread": 4150.25, "speedup": 2.94415, "efficiency": 0.736038, "ref_after": 5567.99, "ref_drift": -0.00245489}, {"threads": 8, "envs": 8, "env_steps_per_s": 20287.3, "per_thread": 2535.91, "speedup": 3.59791, "efficiency": 0.449738, "ref_after": 5538.77, "ref_drift": -0.00768997}],
+  "worst_ref_drift": 0.0133997,
+  "ref_trend": {"run": 4, "span": 0.0212532, "direction": "falling"},
+  "trending": false,
+  "stable": true,
+  "gate": 5000,
+  "pass": true
+}

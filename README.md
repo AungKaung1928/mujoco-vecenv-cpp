@@ -16,8 +16,11 @@ Python one, to the bit**, and that this is tested on every commit. A faster envi
 is not the same environment trains a different policy and proves nothing about the Python
 result it replaces.
 
-Everything here is measured or marked `TODO(measure)`. The equality table is measured. The
-throughput tables are not yet: they need an idle machine and the run phase has not started.
+Everything here is measured or marked `TODO(measure)`. The equality table and the throughput
+tables are measured, with the benchmark's own stability verdicts printed next to them. PPO
+on this backend is the one cell still open.
+
+**Walkthrough:** https://aungkaung1928.github.io/projects/mujoco-vecenv-cpp.html — the same project explained end to end, file by file.
 
 ## What is in the box
 
@@ -153,62 +156,117 @@ silently.
 `allow_overcommit`. Every number in microduck-rl was measured inside 8 of 14 cores on a
 laptop that has other work to do, and this repo inherits the rule.
 
-## Throughput — `TODO(measure)`
+## Throughput — measured 2026-09-22
 
-Nothing below is measured yet. The protocol is microduck-rl's, so the rows will be comparable
-to the ones already published there: a single-thread reference window before the sweep and
-after every configuration (UNSTABLE if it drifts more than 10%, TRENDING if it moves
-monotonically across three windows by more than 4%), a box check recorded in the JSON, and a
-sustained run whose plateau band, not its mean, is the budget.
+The protocol is microduck-rl's: a single-thread reference window before the sweep and after
+every configuration (UNSTABLE if it drifts more than 10%, TRENDING if it moves monotonically
+across three windows by more than 4%), a box check recorded in the JSON, and a sustained run
+whose plateau band, not its mean, is the budget. Every JSON named below is in `runs/`. The
+host is the laptop in *Measured environment*; its power state cannot be read from inside WSL,
+so two sweeps taken hours apart are not comparable to better than a few percent, and the
+tables say when they were taken.
 
 ### Sweep, `groundcontact`, reward v2, `env` mode (the full environment)
 
+`runs/bench_cpp_env_main.json`, 14:51, freshly rebooted, 1-min load 0.22, reference drift
+within 1.3%, **stable**.
+
 | threads | env-steps/s | per thread | speedup | efficiency | ref drift |
 |---|---|---|---|---|---|
-| 1 | TODO(measure) | | 1.00x | 100% | |
-| 2 | TODO(measure) | | | | |
-| 4 | TODO(measure) | | | | |
-| 8 | TODO(measure) | | | | |
+| 1 | 5,639 | 5,639 | 1.00x | 100% | +1.3% |
+| 2 | 10,471 | 5,236 | 1.86x | 93% | −0.1% |
+| 4 | 16,601 | 4,150 | 2.94x | 74% | −0.2% |
+| 8 | 20,287 | 2,536 | 3.60x | 45% | −0.8% |
 
 `nice -n 10 ./build/bench_vecenv --threads 1 2 4 8 --seconds 20 --ref-seconds 10 --tag main`
 
+45% at 8 threads is the same figure the Python vector env reached with 8 processes on this
+model (42%). Process isolation was not the loss; whatever caps this machine at 8 workers caps
+threads in one address space the same way. The `groundcontact` model has five times the
+floor-collidable geoms of `walk`, and the CPU is a Core Ultra 5 225H with 4 performance, 8
+efficiency and 2 low-power cores and no SMT, so heterogeneous cores are at least as good a
+reading as the shared-cache one; neither is provable from inside the guest.
+
 ### The same sweep in `bare` mode (10 × `mj_step`, no environment)
 
-Same rows, `--mode bare`. The gap between the two tables is the cost of everything that is not
-physics: observation assembly, reward, pushes, bookkeeping and the one `mj_forward` that keeps
-the observation on a single timestamp. In Python that gap was 25% (4,175 vs 5,223 env-steps/s
-on one core, of which about 7 points is the `mj_forward`). The prediction here is a few
-percent, and the `mj_forward` share stays, because it is a correctness cost and not overhead.
+`runs/bench_cpp_bare_main.json`, 21:03, freshly rebooted, 1-min load 1.28.
+
+| threads | env-steps/s | per thread | speedup | efficiency | ref drift |
+|---|---|---|---|---|---|
+| 1 | 5,404 | 5,404 | 1.00x | 100% | −0.7% |
+| 2 | 10,788 | 5,394 | 2.00x | 100% | +0.4% |
+| 4 | 20,142 | 5,036 | 3.73x | 93% | +3.7% |
+| 8 | 27,011 | 3,376 | 5.00x | 62% | +2.7% |
+
+`nice -n 10 ./build/bench_vecenv --mode bare --threads 1 2 4 8 --seconds 20 --ref-seconds 10 --cooldown 25 --tag main`
+
+Three things to know about this table. A sweep three minutes earlier read 5,390 / 10,823 /
+19,956 / 27,087, so every row reproduced within 1%. The guard nevertheless marked both sweeps
+TRENDING: the single-thread reference rose 4.4% across three consecutive windows against a
+4% bar. On this laptop the single-thread reference scatters about 5% from window to window
+with nothing else running, so the trend detector, written for the Python repo's steadier
+process reference, fires on scatter here. The rows are quoted with that verdict attached,
+not hidden. And a third sweep started right after the second, on a warm package, read
+5,340 / 10,496 / 18,909 / 24,384 (`runs/bench_cpp_bare_chained.json`): 10% down at 8 threads,
+which is the chained-benchmark effect microduck-rl documented, reproduced in C++.
+
+The bare rows scale better than the env rows (62% against 45% at 8 threads) because the
+physics alone is a smaller working set per step. The 1-thread bare row (5,404) sits *below*
+the 1-thread env row (5,639) measured six hours earlier; the two sweeps were taken in
+different host states, so the env-over-bare cost on one core cannot be read from these two
+tables to better than about 4%. The Python gap was 25%. Whatever the C++ gap is, it is
+inside the day-to-day scatter of the host.
 
 ### Sustained, 8 threads, 18 windows
 
-`nice -n 10 ./build/bench_vecenv --sustained 8 --windows 18 --seconds 20 --tag sustained`
+`runs/bench_cpp_sustained.json`, 21:26, `env` mode, 60 s cooldown first.
 
-microduck-rl's process-based run of the same workload bottomed out at window 11 and was still
-rising at window 18, a 9% band. What matters is whether the thread-based shape is the same.
+`nice -n 10 ./build/bench_vecenv --sustained 8 --windows 18 --seconds 20 --cooldown 60 --tag sustained`
+
+| window | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| env-steps/s | 18,724 | 20,829 | 19,440 | 18,965 | 18,548 | 17,605 | 16,724 | 16,339 | 16,001 | 15,547 | 13,782 | 13,327 | 13,329 | 15,590 | 16,238 | 14,393 | 15,074 | 14,908 |
+
+Peak 20,829, a monotonic fall to 13,327 at window 11, a climb to 16,238 at window 14, and
+14,908 at the end. Plateau over the last six windows **13,329 to 16,238, a 22% band**; last
+three windows average 14,792, 29% under the peak. The Python process-based run of the same
+workload had the same shape: a bottom at window 11, then a climb. Two runtimes with no code
+in common dip at the same minute, so the dip belongs to the host's power management, not to
+either implementation. Budget on the low end of the band.
 
 ### Python processes vs C++ threads, same hour
+
+`runs/compare_main.json`, 21:42, started after the 1-min load fell under 0.8.
 
 `nice -n 10 python bench/compare.py --workers 1 2 4 8 --seconds 20 --rounds 2 --tag main`
 
 | workers | Python processes | C++ threads | ratio | C++ efficiency |
 |---|---|---|---|---|
-| 1 | TODO(measure) | TODO(measure) | | 100% |
-| 8 | TODO(measure) | TODO(measure) | | |
+| 1 | 2,336 | 4,867 | 2.08x | 100% |
+| 2 | 3,463 | 7,429 | 2.14x | 76% |
+| 4 | 4,270 | 10,370 | 2.43x | 53% |
+| 8 | 6,385 | 12,327 | 1.93x | 32% |
 
-Two things this will settle. First, the ratio at 8, which is the only number that decides
-whether the C++ env is worth its build step for training: under about 1.3x it is not, and
-this README will say so. Second, the efficiency question microduck-rl left open. Its
-process-based sweep lost efficiency earlier on the variant with five times the collidable
-geoms, which points at L3 or memory bandwidth rather than at core type. Threads in one
-address space share the same L3 as processes do, so if the efficiency curve is unchanged
-the shared-resource reading gets a second data point; if it improves markedly, something
-about process isolation (page tables, scheduler placement) was part of the loss.
+A first run of the same command, started while the 1-min load was still 3.06 from the
+sustained test (`runs/compare_contended.json`), gave 8 workers 6,668 vs 13,612, a 2.04x
+ratio. The multi-worker rows of the two runs agree within 10% and the ratio at 8 is 1.9x to
+2.0x either way. Both runs were marked UNSTABLE by the single-process Python reference
+(scatter up to 39% between windows): one forked worker behind a pipe has a jittery
+round-trip that the reference guard, designed for bare `mj_step`, reads as a moving machine.
+The guard's verdict is recorded in both JSONs.
 
-A 2-second smoke of the bench, run while writing it on a box that was not idle, read about
-5,100 env-steps/s on one thread in `env` mode and about 5,300 in `bare` mode. Those are not
-quotable and are not in the tables; they are here so that the first real run has something
-to be surprised by.
+So the decision rule is settled: the C++ environment is worth its build step for training.
+The efficiency question is not improved by it: 32% at 8 workers under this Python-driven
+protocol, 45% in the pure C++ sweep, 42% for Python processes. Threads did not buy back the
+scaling loss; they bought a 2x constant factor.
+
+**The finding that matters for microduck-rl:** its Python vector env delivers about 6,400
+env-steps/s at 8 processes under random actions. The 13,300 env-steps/s that repo budgeted
+from was composed as bare physics × wrapper factor, and the inter-process round trip was
+never in the composition. The first PPO run on that env, started tonight, reports about
+3,450–3,750 env-steps/s with the policy forward pass and the update in the loop. That is the
+fifth revision of the same number, downward again, and it is the first one measured on the
+workload itself.
 
 ### PPO on the C++ env
 
@@ -250,8 +308,13 @@ upstream assets fetched; the C++ suite again under `-fsanitize=address,undefined
 
 ## What this does not prove
 
-- **Nothing here is faster yet.** Every throughput cell is `TODO(measure)`. The smoke reading
-  above was taken on a busy box for two seconds and is disclosed, not claimed.
+- **2x is a constant factor on one laptop.** The Python-vs-C++ ratio was measured on one
+  14-core machine in one evening, with the single-process reference flagged unstable both
+  times; the multi-worker rows reproduced within 10% across two runs, and that is the whole
+  evidence. It says nothing about a machine with more cores or a steadier power budget.
+- **The sweep tables carry the guard's verdict, not a clean pass.** The bare sweep is
+  TRENDING by a trend detector that fires on this box's 5% single-thread scatter; the rows
+  reproduced within 1% across two sweeps and are quoted on that basis.
 - **Bit equality holds on one machine, one compiler, one libm.** Python's `pow` and `exp` and
   the C++ ones are the same libm calls on the same host, which is why they agree; a runner
   with a different glibc or a numpy built with a different SIMD `exp` could differ in the last
@@ -293,6 +356,11 @@ python scripts/contract_report.py          # the equality table, one core, a min
 `./verify.sh` does all of that in order and prints the benchmark commands at the end. Set
 `MICRODUCK_RL` or `MICRODUCK_ASSETS` if microduck-rl lives somewhere else. `python3 -m venv`
 is broken on some machines; `uv venv` works the same way.
+
+The same thing from nothing, inside a container: `docker build -t mujoco-vecenv-cpp . && docker run --rm
+mujoco-vecenv-cpp` clones microduck-rl at the pinned commit, fetches the meshes, builds, and runs the
+C++ and Python tests. Image built and its default test command passed inside it on 2026-09-23
+(doctest suite plus 41 pytest cases), image size 1.05 GB.
 
 Sanitizer builds: `cmake -S . -B build-san -DVECENV_SANITIZE=address,undefined
 -DVECENV_BUILD_PYTHON=OFF -DVECENV_BUILD_BENCH=OFF` (or `thread`). Two things worth knowing.
