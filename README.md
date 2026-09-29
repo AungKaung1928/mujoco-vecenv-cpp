@@ -16,9 +16,10 @@ Python one, to the bit**, and that this is tested on every commit. A faster envi
 is not the same environment trains a different policy and proves nothing about the Python
 result it replaces.
 
-Everything here is measured or marked `TODO(measure)`. The equality table and the throughput
-tables are measured, with the benchmark's own stability verdicts printed next to them. PPO
-on this backend is the one cell still open.
+Everything here is measured. The equality table and the throughput tables carry the
+benchmark's own stability verdicts next to them. The full 50M-step PPO run on this backend is
+measured too: the policy it trains scores 341.9 ± 4.1 of 500 on the Python env, against 344.8
+± 2.9 for the policy trained there, in 3.1 h against 4.4 h.
 
 **Walkthrough:** https://aungkaung1928.github.io/projects/mujoco-vecenv-cpp.html — the same project explained end to end, file by file.
 
@@ -268,14 +269,91 @@ never in the composition. The first PPO run on that env, started tonight, report
 fifth revision of the same number, downward again, and it is the first one measured on the
 workload itself.
 
-### PPO on the C++ env
+### PPO on the C++ env — measured 2026-09-29/30
 
-After microduck-rl's step-3 run exists in Python: `scripts/ppo_cpp.py` with the same
-configuration and the same seeds. `ppo.py` is executed as `__main__` with `vecenv_cpp`
-installed under the module name `vec_env`; nothing in microduck-rl changes. Compare return
-curves and final evaluation across seeds, not point by point (different push draws, see
-above), and report wall-clock for the 50M budget on both backends. A 1,024-step smoke of the
-loop on the C++ backend runs and writes its checkpoint; that is all it has been asked to do.
+microduck-rl's step-3 run, repeated on this backend: same configuration, same training seed,
+same two-chunk schedule (0–25M without a KL stop, 25–50M resumed with `--target-kl 0.02`),
+same 8 envs and 256-step rollouts. `ppo.py` runs unchanged as `__main__` with `vecenv_cpp`
+installed as `vec_env`. The C++ run was cut into four 12.5M-step invocations so the laptop
+could cool between them; the Python run was two 25M chunks, the second of them in three
+invocations.
+
+```
+OMP_NUM_THREADS=1 nice -n 10 python scripts/ppo_cpp.py --total-steps 50000000 --chunk-steps 12500000 --tag v2cpp --reward v2
+OMP_NUM_THREADS=1 nice -n 10 python scripts/ppo_cpp.py --resume runs/ppo_v2cpp.ckpt.pt --tag v2cpp                   # 12.5M -> 25M
+OMP_NUM_THREADS=1 nice -n 10 python scripts/ppo_cpp.py --resume runs/ppo_v2cpp.ckpt.pt --tag v2cpp --target-kl 0.02  # twice, to 50M
+cd ../microduck-rl && python eval_policy.py ../mujoco-vecenv-cpp/runs/ppo_v2cpp.pt --variant groundcontact \
+    --out ../mujoco-vecenv-cpp/runs/eval_v2cpp_groundcontact.json
+python scripts/compare_ppo_backends.py --py ../microduck-rl/runs/ppo_v2.json --cpp runs/ppo_v2cpp.json \
+    --out runs/ppo_backend_compare.json
+```
+
+**Final evaluation**, both policies on microduck-rl's *Python* env, 100 episodes × 5 evaluation
+seeds (the same five for both), ± is the standard deviation over the five seed means:
+
+| policy | trained on | return of 500 | survival | upright | median trunk height | pushes on a fallen robot |
+|---|---|---|---|---|---|---|
+| `runs/ppo_v2cpp.pt` | C++ env | 341.9 ± 4.1 | 0.95 | 0.50 | 5.9 cm | 616 |
+| microduck-rl `runs/ppo_v2.pt` | Python env | 344.8 ± 2.9 | 0.73 | 0.50 | 5.9 cm | 629 |
+| PD hold-pose | — | 175.8 ± 0.2 | 0.47 | — | — | 1443 |
+
+Paired by evaluation seed, the C++-trained policy scores −3.5, −0.9, −3.7, −8.3 and +2.4
+against the Python-trained one: mean −2.8, sd 3.9 over five seeds, about 1.6 standard errors.
+That is inside the noise of the evaluation, and the evaluation noise is not the large term:
+there is one training seed per backend, so nothing here measures how far a second training
+run on the *same* backend would land. The policy trained on the C++ env evaluates on the
+Python env at the same return. That is the claim the equality test predicts, and the
+one this run was for.
+
+**Survival is the column that differs, and it measures less than it looks.** Survival counts
+steps with the trunk above 4 cm; standing height is 12 cm. Both policies are upright (tilt
+under 26°) half the time, with a median trunk height of 5.9 cm, so neither stands better.
+The 0.95 against 0.73 says how often the trunk dips under 4 cm from a similar low posture.
+The gap is not evaluation noise: with 500 episodes the standard errors are 0.005 and 0.013.
+It is there from the start of training: the in-training evaluations (20 episodes every 20
+updates, 305 per 12.5M block) average 0.94–1.00 in every block of the C++ run and 0.68–0.80
+in every block of the Python run. With one run each it cannot be pinned on the backend. The
+two envs draw different push schedules from the same seed (above), and a different
+push sequence is enough to send two PPO runs to different postures.
+
+**Training curves**, per 12.5M-step block (`runs/ppo_backend_compare.json`: mean over the
+block's updates of return50, clip fraction and approx KL; "rate" is the per-update env-steps/s
+ppo.py logs):
+
+| block | return50 C++ / Python | clip fraction C++ / Python | KL mean (max) C++ | KL mean (max) Python | rate C++ / Python |
+|---|---|---|---|---|---|
+| 0–12.5M | 345.1 / 337.9 | 0.56 / 0.58 | 0.21 (11.0) | 0.22 (25.1) | 4,725 / 3,396 |
+| 12.5–25M | 331.5 / 330.4 | 0.69 / 0.73 | 0.76 (65.7) | 0.84 (173.1) | 4,755 / 3,123 |
+| 25–37.5M, KL stop | 342.3 / 332.2 | 0.30 / 0.34 | 0.039 (0.53) | 0.042 (0.57) | 7,103 / 4,342 |
+| 37.5–50M, KL stop | 349.5 / 344.3 | 0.21 / 0.23 | 0.022 (0.08) | 0.022 (0.08) | 5,998 / 3,735 |
+
+The step-size failure microduck-rl found in its chunk 1 reproduced here. Without a KL stop,
+the clip fraction climbed to 0.69 and the KL spiked to 66 in the second block, and return50
+fell the same way (345 → 332 here, 338 → 330 there). The KL stop pulled both runs back to the
+same clip fraction and KL within a few hundredths. A failure that shows on two backends with
+different push draws is a property of the configuration, not of one unlucky run.
+
+**Wall-clock for 50M steps:** 11,148 s (3.1 h) on the C++ env, the sum of ppo.py's
+`chunk_wall_s` over the four invocations. The Python run took 8,786 s for its first 25M
+(`chunk_wall_s`). Its second 25M took 7,122 s by the job runner's start/end stamps (58 and
+60 min), plus a ~4-minute invocation stopped after a checkpoint whose 3 updates were redone.
+That is about 15,900 s (4.4 h) in total, and the C++ env took about 0.70 of that time:
+
+| stage | C++ | Python | ratio |
+|---|---|---|---|
+| 0–25M, no KL stop | 6,246 s | 8,786 s | 1.41x |
+| 25–50M, KL stop | 4,914 s (runner stamps) | 7,122 s (runner stamps) | 1.45x |
+
+The per-update rates say the same with more detail. The gain is 1.39–1.52x while every update
+runs its full 5 epochs, and 1.61–1.64x once the KL stop ends most updates after fewer epochs.
+The shorter the update, the larger the share of time the env gets, and the more the faster env
+shows. Neither figure reaches the ~2x of the random-action comparison above, because PPO puts
+the policy forward pass and the gradient update, both single-threaded Python/PyTorch, on the
+same critical path. A `top` snapshot 15 minutes into the last chunk shows the one training
+process at 470% CPU with 8 env threads, so the threads sat idle a good part of every
+rollout. Both backends' rates also moved by 14–16% between invocations of the same stage
+(C++ 7,103 then 5,998; Python 4,342 then 3,735), on the same laptop, in one evening each. That
+spread is why the ratio is quoted per stage and not as a single number.
 
 ## Tests
 
@@ -324,9 +402,11 @@ upstream assets fetched; the C++ suite again under `-fsanitize=address,undefined
 - **The draw is not replicated.** Same seed, different pushes. A training-run replay across
   backends is not available; comparisons are statistical.
 - **Sensor noise is not contract-tested**, for the same reason.
-- **No policy has trained on this yet.** The 1,024-step smoke proves the plumbing, not that
-  a policy trained here matches one trained on the Python env. That comparison is a run-phase
-  item with its own row in `docs/ISSUES.md`.
+- **One training seed per backend.** The PPO comparison is one run on each env. The returns
+  agree within the evaluation noise, but survival differs by 0.22, and one run each cannot
+  say whether that is the backend, the push draws or ordinary run-to-run spread. Settling
+  it needs three or more training seeds per backend: about 9 h of CPU on this env and 13 h
+  on the Python one.
 - **One robot.** `Env` is Microduck-shaped: 14 actuators, a `STAND` keyframe, a `trunk_base`
   body, `angular-velocity` and `orientation` sensors. The threading layer is not, and a second
   model behind the same interface is the natural next step once this one has numbers.
