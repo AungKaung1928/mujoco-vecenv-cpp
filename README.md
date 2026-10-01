@@ -18,8 +18,9 @@ result it replaces.
 
 Everything here is measured. The equality table and the throughput tables carry the
 benchmark's own stability verdicts next to them. The full 50M-step PPO run on this backend is
-measured too: the policy it trains scores 341.9 ± 4.1 of 500 on the Python env, against 344.8
-± 2.9 for the policy trained there, in 3.1 h against 4.4 h.
+measured too, over three training seeds per backend: the policies it trains score 339.4 ± 2.3
+of 500 on the Python env, against 348.1 ± 8.1 for the policies trained there, in about 3.1 h
+per run against 4.0–4.4 h.
 
 **Walkthrough:** https://aungkaung1928.github.io/projects/mujoco-vecenv-cpp.html — the same project explained end to end, file by file.
 
@@ -286,6 +287,11 @@ cd ../microduck-rl && python eval_policy.py ../mujoco-vecenv-cpp/runs/ppo_v2cpp.
     --out ../mujoco-vecenv-cpp/runs/eval_v2cpp_groundcontact.json
 python scripts/compare_ppo_backends.py --py ../microduck-rl/runs/ppo_v2.json --cpp runs/ppo_v2cpp.json \
     --out runs/ppo_backend_compare.json
+# seeds 1 and 2: --seed N --tag v2cpp_sN here, --seed N --tag v2_sN in microduck-rl, then
+python scripts/aggregate_ppo_seeds.py --cpp-evals runs/eval_v2cpp{,_s1,_s2}_groundcontact.json \
+    --cpp-runs runs/ppo_v2cpp{,_s1,_s2}.json \
+    --py-evals ../microduck-rl/runs/eval_v2{,_s1,_s2}_groundcontact.json \
+    --py-runs ../microduck-rl/runs/ppo_v2{,_s1,_s2}.json --out runs/ppo_backend_seeds.json
 ```
 
 **Final evaluation**, both policies on microduck-rl's *Python* env, 100 episodes × 5 evaluation
@@ -297,26 +303,42 @@ seeds (the same five for both), ± is the standard deviation over the five seed 
 | microduck-rl `runs/ppo_v2.pt` | Python env | 344.8 ± 2.9 | 0.73 | 0.50 | 5.9 cm | 629 |
 | PD hold-pose | — | 175.8 ± 0.2 | 0.47 | — | — | 1443 |
 
+This first pair is training seed 0. Seeds 1 and 2 follow below.
+
 Paired by evaluation seed, the C++-trained policy scores −3.5, −0.9, −3.7, −8.3 and +2.4
 against the Python-trained one: mean −2.8, sd 3.9 over five seeds, about 1.6 standard errors.
-That is inside the noise of the evaluation, and the evaluation noise is not the large term:
-there is one training seed per backend, so nothing here measures how far a second training
-run on the *same* backend would land. The policy trained on the C++ env evaluates on the
-Python env at the same return. That is the claim the equality test predicts, and the
-one this run was for.
+That is inside the noise of the evaluation. The evaluation noise is not the large term,
+though; the run-to-run spread is, so the run was repeated.
 
-**Survival is the column that differs, and it measures less than it looks.** Survival counts
-steps with the trunk above 4 cm; standing height is 12 cm. Both policies are upright (tilt
-under 26°) half the time, with a median trunk height of 5.9 cm, so neither stands better.
-The 0.95 against 0.73 says how often the trunk dips under 4 cm from a similar low posture.
-The gap is not evaluation noise: with 500 episodes the standard errors are 0.005 and 0.013.
-It is there from the start of training: the in-training evaluations (20 episodes every 20
-updates, 305 per 12.5M block) average 0.94–1.00 in every block of the C++ run and 0.68–0.80
-in every block of the Python run. With one run each it cannot be pinned on the backend. The
-two envs draw different push schedules from the same seed (above), and a different
-push sequence is enough to send two PPO runs to different postures.
+**Three training seeds per backend** (measured 2026-09-30/10-01). Seeds 1 and 2 on each
+backend repeat the seed-0 protocol exactly: four 12.5M-step invocations, the first two without
+a KL stop, the last two with `--target-kl 0.02`, the same evaluation. One deviation: the
+Python seed-0 run did its first 25M as one invocation, the new Python seeds in two, which only
+changes the env reseed at the resume. `scripts/aggregate_ppo_seeds.py` writes every number
+below to `runs/ppo_backend_seeds.json`:
 
-**Training curves**, per 12.5M-step block (`runs/ppo_backend_compare.json`: mean over the
+| training seed | C++ return | C++ survival | Python return | Python survival |
+|---|---|---|---|---|
+| 0 | 341.9 ± 4.1 | 0.948 | 344.8 ± 2.9 | 0.727 |
+| 1 | 338.5 ± 8.1 | 0.998 | 357.3 ± 7.6 | 0.999 |
+| 2 | 337.7 ± 7.6 | 0.873 | 342.2 ± 5.1 | 0.895 |
+| **mean ± sd over seeds** | **339.4 ± 2.3** | **0.94 ± 0.06** | **348.1 ± 8.1** | **0.87 ± 0.14** |
+
+Upright fraction is 0.49–0.50 for all six policies. Median trunk height is 5.9–6.0 cm for five
+of them; Python seed 1 holds 8.8 cm, the one policy that found a taller posture, and also the
+highest return. C++ minus Python, Welch over training seeds: return −8.7 (t −1.8, df 2.3),
+survival +0.07 (t 0.75, df 2.8). Neither is a backend difference at n = 3.
+
+**Survival is the column that looked different, and the extra seeds took the difference
+away.** Survival counts steps with the trunk above 4 cm; standing height is 12 cm, so it says
+how often the trunk dips under 4 cm from a low crouch. With one seed each it read 0.95 against
+0.73, and that gap was real for those two policies (500 episodes, standard errors 0.005 and
+0.013). Across seeds it is run-to-run spread: the Python seeds span 0.73–1.00 and the C++
+seeds 0.87–1.00. The in-training evaluations say the same thing; each run settles into its
+survival level from the first 12.5M-step block, and a second Python seed sits at 1.00 in
+every block where seed 0 sat at 0.68–0.80. The seed-0 Python run was the low draw.
+
+**Training curves**, training seed 0, per 12.5M-step block (`runs/ppo_backend_compare.json`: mean over the
 block's updates of return50, clip fraction and approx KL; "rate" is the per-update env-steps/s
 ppo.py logs):
 
@@ -343,6 +365,11 @@ That is about 15,900 s (4.4 h) in total, and the C++ env took about 0.70 of that
 |---|---|---|---|
 | 0–25M, no KL stop | 6,246 s | 8,786 s | 1.41x |
 | 25–50M, KL stop | 4,914 s (runner stamps) | 7,122 s (runner stamps) | 1.45x |
+
+Seeds 1 and 2, four invocations each by the runner's stamps: C++ 11,579 s and 10,994 s
+(3.2 h, 3.1 h), Python 14,473 s and 13,803 s (4.0 h, 3.8 h): 1.25x for both pairs, against
+1.43x for seed 0. The Python seed-0 run was the slow one; why is not measured. Take the
+end-to-end training speed-up as 1.25x–1.43x on this laptop.
 
 The per-update rates say the same with more detail. The gain is 1.39–1.52x while every update
 runs its full 5 epochs, and 1.61–1.64x once the KL stop ends most updates after fewer epochs.
@@ -402,11 +429,9 @@ upstream assets fetched; the C++ suite again under `-fsanitize=address,undefined
 - **The draw is not replicated.** Same seed, different pushes. A training-run replay across
   backends is not available; comparisons are statistical.
 - **Sensor noise is not contract-tested**, for the same reason.
-- **One training seed per backend.** The PPO comparison is one run on each env. The returns
-  agree within the evaluation noise, but survival differs by 0.22, and one run each cannot
-  say whether that is the backend, the push draws or ordinary run-to-run spread. Settling
-  it needs three or more training seeds per backend: about 9 h of CPU on this env and 13 h
-  on the Python one.
+- **Three training seeds per backend.** Enough to show the seed-0 survival gap was
+  run-to-run spread, not enough to resolve a backend difference smaller than that spread
+  (survival sd 0.06–0.14, return sd 2–8 over seeds). The training curves table is seed 0 only.
 - **One robot.** `Env` is Microduck-shaped: 14 actuators, a `STAND` keyframe, a `trunk_base`
   body, `angular-velocity` and `orientation` sensors. The threading layer is not, and a second
   model behind the same interface is the natural next step once this one has numbers.

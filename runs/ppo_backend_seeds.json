@@ -1,0 +1,525 @@
+{
+ "cpp": {
+  "policies": [
+   {
+    "eval_file": "runs/eval_v2cpp_groundcontact.json",
+    "run_file": "runs/ppo_v2cpp.json",
+    "seed": 0,
+    "finished": true,
+    "global_step": 50001920,
+    "return_mean": 341.9446952806192,
+    "survival_mean": 0.947736,
+    "upright_mean": 0.497888,
+    "height_p50": 0.05893005034961987,
+    "seed_std_return": 4.090774770547705,
+    "per_seed_return": [
+     343.19461897037434,
+     340.4282213316008,
+     344.9424583763894,
+     335.5611507864414,
+     345.59702693829024
+    ],
+    "pushes_unrecoverable": 616,
+    "train_survival_blocks": [
+     {
+      "steps": [
+       0,
+       12500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9898419672131147,
+      "survival_min": 0.7392000000000001,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       12500000,
+       25000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9381232786885245,
+      "survival_min": 0.6062000000000001,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       25000000,
+       37500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.998375081967213,
+      "survival_min": 0.9841999999999999,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       37500000,
+       50000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9829508196721312,
+      "survival_min": 0.9198000000000001,
+      "survival_max": 1.0
+     }
+    ]
+   },
+   {
+    "eval_file": "runs/eval_v2cpp_s1_groundcontact.json",
+    "run_file": "runs/ppo_v2cpp_s1.json",
+    "seed": 1,
+    "finished": true,
+    "global_step": 50001920,
+    "return_mean": 338.4740010192206,
+    "survival_mean": 0.998248,
+    "upright_mean": 0.488464,
+    "height_p50": 0.05983903240673856,
+    "seed_std_return": 8.067755092811566,
+    "per_seed_return": [
+     347.0688419408563,
+     328.24063811348327,
+     341.91075848422537,
+     331.72964783329945,
+     343.4201187242386
+    ],
+    "pushes_unrecoverable": 650,
+    "train_survival_blocks": [
+     {
+      "steps": [
+       0,
+       12500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.908599344262295,
+      "survival_min": 0.6975999999999999,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       12500000,
+       25000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9981534426229508,
+      "survival_min": 0.9478,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       25000000,
+       37500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9992740983606557,
+      "survival_min": 0.9843999999999999,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       37500000,
+       50000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9990754098360657,
+      "survival_min": 0.9822,
+      "survival_max": 1.0
+     }
+    ]
+   },
+   {
+    "eval_file": "runs/eval_v2cpp_s2_groundcontact.json",
+    "run_file": "runs/ppo_v2cpp_s2.json",
+    "seed": 2,
+    "finished": true,
+    "global_step": 50001920,
+    "return_mean": 337.71051390533444,
+    "survival_mean": 0.872696,
+    "upright_mean": 0.487408,
+    "height_p50": 0.059106396999846086,
+    "seed_std_return": 7.60809539471564,
+    "per_seed_return": [
+     347.17304510463845,
+     327.4644712449238,
+     342.60922701007354,
+     334.14514273011605,
+     337.16068343692064
+    ],
+    "pushes_unrecoverable": 638,
+    "train_survival_blocks": [
+     {
+      "steps": [
+       0,
+       12500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.8590813114754098,
+      "survival_min": 0.5271999999999999,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       12500000,
+       25000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.7501698360655739,
+      "survival_min": 0.5484,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       25000000,
+       37500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.7888288524590165,
+      "survival_min": 0.5791999999999999,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       37500000,
+       50000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.8919311475409836,
+      "survival_min": 0.7298,
+      "survival_max": 1.0
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "return_mean": {
+    "mean": 339.37640340172476,
+    "sd": 2.256727835753345,
+    "min": 337.71051390533444,
+    "max": 341.9446952806192,
+    "values": [
+     341.9446952806192,
+     338.4740010192206,
+     337.71051390533444
+    ]
+   },
+   "survival_mean": {
+    "mean": 0.9395600000000001,
+    "sd": 0.06317405644724738,
+    "min": 0.872696,
+    "max": 0.998248,
+    "values": [
+     0.947736,
+     0.998248,
+     0.872696
+    ]
+   },
+   "upright_mean": {
+    "mean": 0.4912533333333333,
+    "sd": 0.005769998729058202,
+    "min": 0.487408,
+    "max": 0.497888,
+    "values": [
+     0.497888,
+     0.488464,
+     0.487408
+    ]
+   },
+   "height_p50": {
+    "mean": 0.059291826585401504,
+    "sd": 0.0004820271708528174,
+    "min": 0.05893005034961987,
+    "max": 0.05983903240673856,
+    "values": [
+     0.05893005034961987,
+     0.05983903240673856,
+     0.059106396999846086
+    ]
+   },
+   "pushes_unrecoverable": {
+    "mean": 634.6666666666666,
+    "sd": 17.243356208503418,
+    "min": 616,
+    "max": 650,
+    "values": [
+     616,
+     650,
+     638
+    ]
+   }
+  }
+ },
+ "python": {
+  "policies": [
+   {
+    "eval_file": "../microduck-rl/runs/eval_v2_groundcontact.json",
+    "run_file": "../microduck-rl/runs/ppo_v2.json",
+    "seed": 0,
+    "finished": true,
+    "global_step": 50001920,
+    "return_mean": 344.75720167072757,
+    "survival_mean": 0.727136,
+    "upright_mean": 0.49739200000000006,
+    "height_p50": 0.05868383918804449,
+    "seed_std_return": 2.892016079210602,
+    "per_seed_return": [
+     346.7080089380499,
+     341.34820809015133,
+     348.61955799291763,
+     343.8870268254193,
+     343.2232065070995
+    ],
+    "pushes_unrecoverable": 629,
+    "train_survival_blocks": [
+     {
+      "steps": [
+       0,
+       12500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.797919344262295,
+      "survival_min": 0.6754,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       12500000,
+       25000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.7007252459016394,
+      "survival_min": 0.5218,
+      "survival_max": 0.9231999999999999
+     },
+     {
+      "steps": [
+       25000000,
+       37500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.7200439344262295,
+      "survival_min": 0.51,
+      "survival_max": 0.9696
+     },
+     {
+      "steps": [
+       37500000,
+       50000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.6837022950819672,
+      "survival_min": 0.5032000000000001,
+      "survival_max": 0.8058
+     }
+    ]
+   },
+   {
+    "eval_file": "../microduck-rl/runs/eval_v2_s1_groundcontact.json",
+    "run_file": "../microduck-rl/runs/ppo_v2_s1.json",
+    "seed": 1,
+    "finished": true,
+    "global_step": 50001920,
+    "return_mean": 357.2770435555826,
+    "survival_mean": 0.9993520000000001,
+    "upright_mean": 0.49772000000000005,
+    "height_p50": 0.08810223742372364,
+    "seed_std_return": 7.6075537090337,
+    "per_seed_return": [
+     361.4629076585349,
+     346.8666920528013,
+     366.1464082412752,
+     352.531207536722,
+     359.37800228858
+    ],
+    "pushes_unrecoverable": 613,
+    "train_survival_blocks": [
+     {
+      "steps": [
+       0,
+       12500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.995687868852459,
+      "survival_min": 0.8798,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       12500000,
+       25000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9950085245901639,
+      "survival_min": 0.946,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       25000000,
+       37500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9988137704918032,
+      "survival_min": 0.9856,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       37500000,
+       50000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9982590163934426,
+      "survival_min": 0.9751999999999998,
+      "survival_max": 1.0
+     }
+    ]
+   },
+   {
+    "eval_file": "../microduck-rl/runs/eval_v2_s2_groundcontact.json",
+    "run_file": "../microduck-rl/runs/ppo_v2_s2.json",
+    "seed": 2,
+    "finished": true,
+    "global_step": 50001920,
+    "return_mean": 342.24890087508925,
+    "survival_mean": 0.8952080000000001,
+    "upright_mean": 0.493384,
+    "height_p50": 0.05858904034170669,
+    "seed_std_return": 5.05852715993971,
+    "per_seed_return": [
+     348.45688465872166,
+     337.8432699287798,
+     346.23019974970305,
+     336.9249887617101,
+     341.7891612765314
+    ],
+    "pushes_unrecoverable": 627,
+    "train_survival_blocks": [
+     {
+      "steps": [
+       0,
+       12500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9904052459016394,
+      "survival_min": 0.7916000000000001,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       12500000,
+       25000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.9398898360655739,
+      "survival_min": 0.6018,
+      "survival_max": 1.0
+     },
+     {
+      "steps": [
+       25000000,
+       37500000
+      ],
+      "evals": 305,
+      "survival_mean": 0.8485862295081967,
+      "survival_min": 0.6566,
+      "survival_max": 0.9905999999999999
+     },
+     {
+      "steps": [
+       37500000,
+       50000000
+      ],
+      "evals": 305,
+      "survival_mean": 0.8705101639344263,
+      "survival_min": 0.7363999999999999,
+      "survival_max": 0.9837999999999999
+     }
+    ]
+   }
+  ],
+  "summary": {
+   "return_mean": {
+    "mean": 348.0943820337998,
+    "sd": 8.05070479449302,
+    "min": 342.24890087508925,
+    "max": 357.2770435555826,
+    "values": [
+     344.75720167072757,
+     357.2770435555826,
+     342.24890087508925
+    ]
+   },
+   "survival_mean": {
+    "mean": 0.8738986666666667,
+    "sd": 0.13735338885274492,
+    "min": 0.727136,
+    "max": 0.9993520000000001,
+    "values": [
+     0.727136,
+     0.9993520000000001,
+     0.8952080000000001
+    ]
+   },
+   "upright_mean": {
+    "mean": 0.49616533333333335,
+    "sd": 0.002414281949842129,
+    "min": 0.493384,
+    "max": 0.49772000000000005,
+    "values": [
+     0.49739200000000006,
+     0.49772000000000005,
+     0.493384
+    ]
+   },
+   "height_p50": {
+    "mean": 0.06845837231782494,
+    "sd": 0.017012152242716825,
+    "min": 0.05858904034170669,
+    "max": 0.08810223742372364,
+    "values": [
+     0.05868383918804449,
+     0.08810223742372364,
+     0.05858904034170669
+    ]
+   },
+   "pushes_unrecoverable": {
+    "mean": 623.0,
+    "sd": 8.717797887081348,
+    "min": 613,
+    "max": 629,
+    "values": [
+     629,
+     613,
+     627
+    ]
+   }
+  }
+ },
+ "pd": {
+  "return_mean": 175.83647860052122,
+  "survival_mean": 0.465424,
+  "upright_mean": 0.12947200000000003,
+  "height_p50": 0.03901638921621125,
+  "seed_std_return": 0.2469424065073132
+ },
+ "cpp_minus_python": {
+  "return_mean": {
+   "diff": -8.717978632075017,
+   "t": -1.8059974202463775,
+   "df": 2.312375798195604
+  },
+  "survival_mean": {
+   "diff": 0.06566133333333335,
+   "t": 0.7522488277556783,
+   "df": 2.809927581727187
+  },
+  "upright_mean": {
+   "diff": -0.0049120000000000275,
+   "t": -1.3602240350124835,
+   "df": 2.6794738862175804
+  },
+  "height_p50": {
+   "diff": -0.009166545732423433,
+   "t": -0.9328951033568815,
+   "df": 2.003211324765939
+  }
+ }
+}
