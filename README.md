@@ -1,5 +1,63 @@
 # mujoco-vecenv-cpp — threaded MuJoCo environments in C++, bit-identical to the Python reference
 
+**Walkthrough:** https://aungkaung1928.github.io/projects/mujoco-vecenv-cpp.html — the same project explained end to end, file by file.
+
+## At a glance
+
+Two vector environments, one PPO loop. The Python one forks N processes; this one runs N
+environments on T threads of one process and produces the same numbers to the bit.
+
+```mermaid
+flowchart LR
+    subgraph PY["microduck-rl · Python VecEnv"]
+        direction TB
+        P0["main process<br/>fork, pickle"]
+        P1["env process 1<br/>MicroduckEnv"]
+        P2["env process 2"]
+        P8["env process 8"]
+        P0 -- pipe --> P1
+        P0 -- pipe --> P2
+        P0 -- pipe --> P8
+    end
+    subgraph CPP["mujoco-vecenv-cpp · C++ VecEnv"]
+        direction TB
+        C0["one process<br/>atomic generation counter"]
+        C1["thread 1<br/>own mjModel + mjData"]
+        C2["thread 2"]
+        C8["thread 8"]
+        C0 -- shared buffers --> C1
+        C0 -- shared buffers --> C2
+        C0 -- shared buffers --> C8
+    end
+    PPO["ppo.py, unchanged<br/>8 envs × 256-step rollouts, 50M steps"]
+    PY -- "6,385 env-steps/s at 8 workers" --> PPO
+    CPP -- "12,327 env-steps/s at 8 workers<br/>1.9–2.0x, same hour, same box" --> PPO
+    PY -. "6,275 / 6,275 observations bit-identical<br/>max abs diff 0.0, 0 info mismatches" .- CPP
+```
+
+| method | metric | value | condition |
+|---|---|---|---|
+| C++ env vs Python env | observations bit-identical | 6,275 / 6,275 (100.00%), max abs diff 0.0e+00, 0 info mismatches | 25 episodes, both reward versions, latency 0/2, noise 0/0.02, two held-out variants, two DR cases, sensor noise off |
+| Python processes vs C++ threads | env-steps/s at 8 workers | 6,385 vs 12,327, 1.93x | random actions, same hour, `compare_main.json`; contended rerun 6,668 vs 13,612, 2.04x |
+| C++ sweep, `env` mode | env-steps/s, 1 → 8 threads | 5,639 → 20,287, 3.60x, 45% efficiency | `groundcontact`, reward v2, stable reference |
+| C++ sweep, `bare` mode | env-steps/s, 1 → 8 threads | 5,404 → 27,011, 5.00x, 62% efficiency | 10 × `mj_step`, TRENDING verdict, rows reproduced within 1% |
+| C++ sustained, 8 threads | plateau band | 13,329–16,238 (22% band), peak 20,829 | 18 × 20 s windows, `env` mode |
+| PPO 50M, C++ env | return of 500 · survival | 339.4 ± 2.3 · 0.94 ± 0.06 | 3 training seeds, evaluated on the Python env, 100 episodes × 5 eval seeds |
+| PPO 50M, Python env | return of 500 · survival | 348.1 ± 8.1 · 0.87 ± 0.14 | same protocol |
+| PD hold-pose | return of 500 | 175.8 ± 0.2 | baseline, no learning |
+| PPO 50M wall-clock | C++ vs Python | 3.1 h vs 4.0–4.4 h, 1.25x–1.43x | per training seed, same laptop |
+| Tests | C++ · Python · CI | 34 cases / 417,482 assertions · 41 tests · ASan+UBSan and TSan | every commit, microduck-rl pinned |
+
+**Key points**
+
+- **Bit-identical, tested on every commit.** 6,275 of 6,275 observations, every reward and every flag match across 25 episodes; it took matching numpy's pairwise `np.mean` (20,000/20,000 vs 15,831 for a sequential loop), libm `pow(x, 2.0)` instead of `x * x` (1,621 mismatches in 2,000,000), the float32 `OBS_SCALE` (0.05000000074505806) and MuJoCo's second `mj_forward` warm-start.
+- **Threads buy a 2x constant, not scaling.** 12,327 vs 6,385 env-steps/s at 8 workers (1.93x, 2.04x contended), but efficiency at 8 is 32% under the Python-driven protocol, 45% in the pure C++ sweep, 42% for Python processes: the cap on this 14-core laptop is outside process isolation.
+- **Same policy, 0.70 of the training time.** Over 3 training seeds the C++-trained policies score 339.4 ± 2.3 against 348.1 ± 8.1 (Welch t −1.8, df 2.3), in 3.1 h against 4.0–4.4 h; the end-to-end gain is 1.25x–1.43x, not 2x, because the policy forward pass and update are single-threaded on the same critical path (one process at 470% CPU with 8 env threads).
+- **The seed-0 survival gap was noise.** 0.95 vs 0.73 survival held for those two policies, but three seeds span 0.87–1.00 (C++) and 0.73–1.00 (Python); and the chunk-1 step-size failure (clip fraction 0.69, KL spike to 66) reproduced on both backends, so it belongs to the configuration.
+- **Limits.** Same seed draws different pushes (C++ splitmix vs numpy SeedSequence), so backends compare statistically, never step by step; bit equality is shown on one machine, one compiler, one libm; sensor noise is not contract-tested; the bare sweep carries a TRENDING verdict from a detector that fires on this box's 5% single-thread scatter; one robot, no rendering.
+
+<details><summary><b>Why this repo exists, and what is in the box</b></summary>
+
 [microduck-rl](https://github.com/AungKaung1928/microduck-rl) trains a balance-and-recover
 policy for the Microduck biped on a laptop with no GPU. Its environment is Python, and
 because the interpreter cannot step two environments at once, the vector env runs N
@@ -22,8 +80,6 @@ measured too, over three training seeds per backend: the policies it trains scor
 of 500 on the Python env, against 348.1 ± 8.1 for the policies trained there, in about 3.1 h
 per run against 4.0–4.4 h.
 
-**Walkthrough:** https://aungkaung1928.github.io/projects/mujoco-vecenv-cpp.html — the same project explained end to end, file by file.
-
 ## What is in the box
 
 | piece | where | what it does |
@@ -43,6 +99,10 @@ headers and `libmujoco.so` ship inside it, so there is nothing to install system
 the C++ side links **the same library file the Python side imports**. That is a requirement,
 not a convenience: the equality test is only meaningful against the same physics binary, and
 `check_library_version()` refuses to run if the header and library disagree.
+
+</details>
+
+<details><summary><b>The equality claim — how it is tested, what had to be matched, what is deliberately different</b></summary>
 
 ## The equality claim
 
@@ -127,6 +187,10 @@ contract cases run with it off), and the draw itself (see next section).
   doubles and 1,000 uniforms per seed. So the building block is right; the seeding and the
   higher-level draws are the deliberate gap, recorded in `docs/ISSUES.md`.
 
+</details>
+
+<details><summary><b>Design — one model per env, threads not processes, generation counter, autoreset</b></summary>
+
 ## Design
 
 **One model per environment.** Domain randomisation writes into `mjModel` (damping, gains,
@@ -157,6 +221,10 @@ silently.
 **The thread budget is in the code.** More than 8 threads is refused unless the caller says
 `allow_overcommit`. Every number in microduck-rl was measured inside 8 of 14 cores on a
 laptop that has other work to do, and this repo inherits the rule.
+
+</details>
+
+<details><summary><b>Throughput — measured 2026-09-22 (sweeps, sustained, Python processes vs C++ threads)</b></summary>
 
 ## Throughput — measured 2026-09-22
 
@@ -270,6 +338,10 @@ never in the composition. The first PPO run on that env, started tonight, report
 fifth revision of the same number, downward again, and it is the first one measured on the
 workload itself.
 
+</details>
+
+<details><summary><b>PPO on the C++ env — measured 2026-09-29/30 (three training seeds, curves, wall-clock)</b></summary>
+
 ### PPO on the C++ env — measured 2026-09-29/30
 
 microduck-rl's step-3 run, repeated on this backend: same configuration, same training seed,
@@ -382,6 +454,10 @@ rollout. Both backends' rates also moved by 14–16% between invocations of the 
 (C++ 7,103 then 5,998; Python 4,342 then 3,735), on the same laptop, in one evening each. That
 spread is why the ratio is quoted per stage and not as a single number.
 
+</details>
+
+<details><summary><b>Tests, and what this does not prove</b></summary>
+
 ## Tests
 
 C++ (`./build/vecenv_tests`, doctest, 34 cases, 417,482 assertions): the observation is 48 finite floats with the
@@ -438,6 +514,8 @@ upstream assets fetched; the C++ suite again under `-fsanitize=address,undefined
 - **No rendering.** Image observations through the MuJoCo C rendering API are deferred until
   a machine with a working EGL context exists; the laptop this was written on has GLFW through
   WSLg and nothing else.
+
+</details>
 
 ## Reproducing
 
