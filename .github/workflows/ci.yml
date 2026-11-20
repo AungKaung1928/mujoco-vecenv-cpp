@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: AungKaung1928/microduck-rl
-          ref: 8a1a03849ce0c11130e9ad38dc0bd719d0bfb147
+          ref: 572053b02dfc8cc7199793df9797f993276dac58
           path: microduck-rl
       - uses: actions/setup-python@v5
         with:
@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: AungKaung1928/microduck-rl
-          ref: 8a1a03849ce0c11130e9ad38dc0bd719d0bfb147
+          ref: 572053b02dfc8cc7199793df9797f993276dac58
           path: microduck-rl
       - uses: actions/setup-python@v5
         with:

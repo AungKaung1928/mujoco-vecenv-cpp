@@ -46,7 +46,7 @@ flowchart LR
 | PPO 50M, Python env | return of 500 · survival | 348.1 ± 8.1 · 0.87 ± 0.14 | same protocol |
 | PD hold-pose | return of 500 | 175.8 ± 0.2 | baseline, no learning |
 | PPO 50M wall-clock | C++ vs Python | 3.1 h vs 4.0–4.4 h, 1.25x–1.43x | per training seed, same laptop |
-| Tests | C++ · Python · CI | 34 cases / 417,482 assertions · 41 tests · ASan+UBSan and TSan | every commit, microduck-rl pinned |
+| Tests | C++ · Python · CI | 34 cases / 417,482 assertions · 44 tests · ASan+UBSan and TSan | every commit, microduck-rl pinned |
 
 **Key points**
 
@@ -92,7 +92,7 @@ per run against 4.0–4.4 h.
 | `_vecenv_cpp`, `vecenv_cpp` | `python/` | pybind11 module and the drop-in `VecEnv`; `scripts/ppo_cpp.py` runs microduck-rl's PPO on it |
 | `bench_vecenv` | `bench/bench_vecenv.cpp` | the sweep and sustained protocol of microduck-rl's `bench.py`, plus a `bare` mode for the physics alone |
 | `compare.py` | `bench/compare.py` | Python processes vs C++ threads, alternating, same hour, same box |
-| tests | `tests/cpp`, `tests/py` | 34 C++ cases (417,482 assertions), 41 Python tests; CI runs them under ASan+UBSan and TSan too |
+| tests | `tests/cpp`, `tests/py` | 34 C++ cases (417,482 assertions), 44 Python tests; CI runs them under ASan+UBSan and TSan too |
 
 3,594 lines of own code. doctest is vendored (MIT). MuJoCo comes from the pip wheel: the
 headers and `libmujoco.so` ship inside it, so there is nothing to install system-wide, and
@@ -353,17 +353,19 @@ could cool between them; the Python run was two 25M chunks, the second of them i
 invocations.
 
 **Correction (2026-11-21): the two backends trained on different v2 rewards.** The C++ env
-hard-codes the v2 `joint_vel` weight as −2.0e-3 (`src/env.cpp`, `kW2`), which is microduck-rl
-at the CI pin 8a1a038. microduck-rl raised it to −4.2e-2 in 572053b (2026-09-23), before
+hard-coded the v2 `joint_vel` weight as −2.0e-3 (`src/env.cpp`, `kW2`), which is microduck-rl
+at the former CI pin 8a1a038. microduck-rl raised it to −4.2e-2 in 572053b (2026-09-23), before
 any run on this page, and its Python runs train with that value. So every C++ PPO run here
 trained with a joint-velocity penalty 21× weaker than its Python twin. Rerunning
-`scripts/contract_report.py` against microduck-rl HEAD shows it: observations are still
-6,275 / 6,275 bit-identical and v1 rewards match, but v2 rewards differ by up to 33 %
+`scripts/contract_report.py` against microduck-rl HEAD with the old weight showed it: observations were
+6,275 / 6,275 bit-identical and v1 rewards matched, but v2 rewards differed by up to 33 %
 (relative). What this changes: the final evaluation below is fair (both policies are
 scored on the Python env with the same reward), but the in-training return50 columns
 compare two different reward functions, and the backend comparison carries this
-confound as well as the backend. Not yet fixed: matching `kW2`, moving the CI pin, and
-retraining the three C++ seeds.
+confound as well as the backend. Fixed in the code on 2026-11-21: `kW2` now holds −4.2e-2,
+CI pins microduck-rl 572053b, and the contract report is back to 0.0 on every v2 case
+(`runs/contract.json` unchanged byte for byte). Not yet fixed: the three C++ runs and every
+C++ number in this section still come from the old weight; they need retraining.
 
 ```
 OMP_NUM_THREADS=1 nice -n 10 python scripts/ppo_cpp.py --total-steps 50000000 --chunk-steps 12500000 --tag v2cpp --reward v2
@@ -488,7 +490,7 @@ compounds; each env owns its model; sensor noise touches only the IMU blocks; 1,
 threads agree; N threaded envs equal N sequential ones; the thread budget is enforced; PCG64
 determinism, ranges and moments; the numpy summation order with a provably different input.
 
-Python (`pytest tests/py`, 41 tests): the equality cases above at three seeds each plus two
+Python (`pytest tests/py`, 44 tests, three of them for `scripts/aggregate_ppo_seeds.py`): the equality cases above at three seeds each plus two
 DR cases at two seeds; the push-shift sensitivity check; PCG64 raw/double/uniform against
 numpy's internal state at three seeds; header, library and wheel are one MuJoCo version;
 constants, scale table, term names and DR ranges equal the Python module's; the drop-in

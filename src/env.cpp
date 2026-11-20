@@ -15,7 +15,7 @@ const char* const kTermsV2[4] = {"upright", "height", "action_rate", "joint_vel"
 
 // REWARD_V1 / REWARD_V2 in env.py, same order as the term names.
 constexpr double kW1[6] = {1.0, 1.0, -0.10, -0.05, -2.0e-4, -0.02};
-constexpr double kW2[4] = {1.0, 1.0, -0.05, -2.0e-3};
+constexpr double kW2[4] = {1.0, 1.0, -0.05, -4.2e-2};
 }  // namespace
 
 Reward parse_reward(const std::string& s) {
