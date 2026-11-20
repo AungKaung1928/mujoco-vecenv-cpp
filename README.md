@@ -344,12 +344,26 @@ workload itself.
 
 ### PPO on the C++ env — measured 2026-09-29/30
 
-microduck-rl's step-3 run, repeated on this backend: same configuration, same training seed,
+microduck-rl's step-3 run, repeated on this backend: same configuration (except one reward
+weight, see the correction below), same training seed,
 same two-chunk schedule (0–25M without a KL stop, 25–50M resumed with `--target-kl 0.02`),
 same 8 envs and 256-step rollouts. `ppo.py` runs unchanged as `__main__` with `vecenv_cpp`
 installed as `vec_env`. The C++ run was cut into four 12.5M-step invocations so the laptop
 could cool between them; the Python run was two 25M chunks, the second of them in three
 invocations.
+
+**Correction (2026-11-21): the two backends trained on different v2 rewards.** The C++ env
+hard-codes the v2 `joint_vel` weight as −2.0e-3 (`src/env.cpp`, `kW2`), which is microduck-rl
+at the CI pin 8a1a038. microduck-rl raised it to −4.2e-2 in 572053b (2026-09-23), before
+any run on this page, and its Python runs train with that value. So every C++ PPO run here
+trained with a joint-velocity penalty 21× weaker than its Python twin. Rerunning
+`scripts/contract_report.py` against microduck-rl HEAD shows it: observations are still
+6,275 / 6,275 bit-identical and v1 rewards match, but v2 rewards differ by up to 33 %
+(relative). What this changes: the final evaluation below is fair (both policies are
+scored on the Python env with the same reward), but the in-training return50 columns
+compare two different reward functions, and the backend comparison carries this
+confound as well as the backend. Not yet fixed: matching `kW2`, moving the CI pin, and
+retraining the three C++ seeds.
 
 ```
 OMP_NUM_THREADS=1 nice -n 10 python scripts/ppo_cpp.py --total-steps 50000000 --chunk-steps 12500000 --tag v2cpp --reward v2
