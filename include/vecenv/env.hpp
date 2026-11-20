@@ -104,6 +104,7 @@ public:
 
     static int n_terms(Reward r) { return r == Reward::V1 ? 6 : 4; }
     static const char* const* term_names(Reward r);
+    static const double* term_weights(Reward r);  // same order as term_names()
     static const std::array<double, kObsDim>& obs_scale();
 
     // Zero-action PD baseline: hold STAND.

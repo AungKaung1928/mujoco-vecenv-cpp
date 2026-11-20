@@ -17,5 +17,8 @@ def test_constants_match_the_python_env(cpp, py):
     assert np.array_equal(cpp.obs_scale(), py.env.OBS_SCALE.astype(np.float64))
     assert cpp.term_names("v1") == list(py.env.REWARD_V1)
     assert cpp.term_names("v2") == list(py.env.REWARD_V2)
+    # the weights too: a stale v2 joint_vel weight (-2e-3 vs -4.2e-2) once went unnoticed here
+    assert cpp.term_weights("v1") == list(py.env.REWARD_V1.values())
+    assert cpp.term_weights("v2") == list(py.env.REWARD_V2.values())
     assert np.allclose(cpp.act_param_lo(), py.dr.ACT_PARAM_LO)
     assert np.allclose(cpp.act_param_hi(), py.dr.ACT_PARAM_HI)

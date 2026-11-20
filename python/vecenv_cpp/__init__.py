@@ -13,7 +13,7 @@ from ._vecenv_cpp import (  # noqa: F401
     ACT_DIM, ACTION_SCALE, FALL_HEIGHT, MAX_WORKERS, OBS_DIM, STAND_HEIGHT,
     ActuatorClass, DRConfig, DRFactors, Env, EnvConfig, EpisodeParams, PCG64,
     act_param_hi, act_param_lo, check_library_version, default_assets_dir,
-    header_version, mujoco_version, obs_scale, term_names,
+    header_version, mujoco_version, obs_scale, term_names, term_weights,
 )
 from ._vecenv_cpp import VecEnv as _CVecEnv
 

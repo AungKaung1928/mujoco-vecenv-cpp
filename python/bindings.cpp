@@ -120,6 +120,10 @@ PYBIND11_MODULE(_vecenv_cpp, m) {
         for (int k = 0; k < Env::n_terms(rw); ++k) out.emplace_back(Env::term_names(rw)[k]);
         return out;
     });
+    m.def("term_weights", [](const std::string& r) {
+        const Reward rw = parse_reward(r);
+        return std::vector<double>(Env::term_weights(rw), Env::term_weights(rw) + Env::n_terms(rw));
+    });
 
     py::class_<PCG64>(m, "PCG64")
         .def(py::init<std::uint64_t>(), py::arg("seed"))

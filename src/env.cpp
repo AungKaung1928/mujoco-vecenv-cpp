@@ -27,6 +27,7 @@ Reward parse_reward(const std::string& s) {
 const char* reward_name(Reward r) { return r == Reward::V1 ? "v1" : "v2"; }
 
 const char* const* Env::term_names(Reward r) { return r == Reward::V1 ? kTermsV1 : kTermsV2; }
+const double* Env::term_weights(Reward r) { return r == Reward::V1 ? kW1 : kW2; }
 
 const std::array<double, kObsDim>& Env::obs_scale() {
     // OBS_SCALE is a float32 array in Python and raw is float64, so the product
