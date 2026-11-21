@@ -39,7 +39,12 @@ VecEnv::VecEnv(const EnvConfig& cfg, int n, std::uint64_t seed, int threads, boo
     info_.assign(static_cast<std::size_t>(n), StepInfo{});
 
     // The calling thread is worker 0; threads 1..T-1 live in the pool.
-    for (int tid = 1; tid < threads_; ++tid) pool_.emplace_back(&VecEnv::worker_, this, tid);
+    try {
+        for (int tid = 1; tid < threads_; ++tid) pool_.emplace_back(&VecEnv::worker_, this, tid);
+    } catch (...) {
+        close();   // the destructor will not run: join the threads that did start, then rethrow
+        throw;
+    }
 }
 
 VecEnv::~VecEnv() { close(); }

@@ -64,7 +64,7 @@ if(VECENV_BUILD_TESTS)
     tests/cpp/main.cpp tests/cpp/test_numpy_compat.cpp tests/cpp/test_rng.cpp
     tests/cpp/test_env.cpp tests/cpp/test_dr.cpp tests/cpp/test_vecenv.cpp)
   target_include_directories(vecenv_tests PRIVATE third_party/doctest)
-  target_link_libraries(vecenv_tests PRIVATE vecenv)
+  target_link_libraries(vecenv_tests PRIVATE vecenv ${CMAKE_DL_LIBS})
   set_target_properties(vecenv_tests PROPERTIES ${_rpath_props})
   enable_testing()
   add_test(NAME vecenv_tests COMMAND vecenv_tests)

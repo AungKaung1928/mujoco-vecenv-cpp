@@ -1,7 +1,14 @@
 // The threaded layer must be invisible: the same numbers at any thread count,
 // and the same numbers as N environments stepped one after another.
+#include <atomic>
+#include <cerrno>
+#include <cstring>
 #include <stdexcept>
+#include <system_error>
 #include <vector>
+
+#include <dlfcn.h>
+#include <pthread.h>
 
 #include "doctest.h"
 #include "helpers.hpp"
@@ -105,3 +112,31 @@ TEST_CASE("close is idempotent and stepping a closed VecEnv throws") {
     std::vector<double> a(2 * kNAct, 0.0);
     CHECK_THROWS_AS(v.step(a.data()), std::runtime_error);
 }
+
+#if !defined(__SANITIZE_ADDRESS__) && !defined(__SANITIZE_THREAD__)
+// Sanitizers interpose pthread_create themselves, so this seam runs in the plain build only.
+// The test binary's own pthread_create wins over libc's (symbol interposition), also for
+// calls from libstdc++. It fails std::thread starts once armed; MuJoCo's internal pool
+// (libc++ inside libmujoco) is told apart by where its start routine lives.
+namespace {
+std::atomic<int> g_std_threads_left{-1};   // -1 = disarmed
+}
+extern "C" int pthread_create(pthread_t* t, const pthread_attr_t* a, void* (*f)(void*), void* arg) {
+    using Fn = int (*)(pthread_t*, const pthread_attr_t*, void* (*)(void*), void*);
+    static const Fn real = reinterpret_cast<Fn>(dlsym(RTLD_NEXT, "pthread_create"));
+    Dl_info info{};
+    const bool from_std_thread = dladdr(reinterpret_cast<void*>(f), &info) && info.dli_fname &&
+                                 std::strstr(info.dli_fname, "libstdc++");
+    if (from_std_thread && g_std_threads_left.load() >= 0 && g_std_threads_left.fetch_sub(1) == 0) return EAGAIN;
+    return real(t, a, f, arg);
+}
+
+TEST_CASE("a worker thread that cannot be started is an exception, not std::terminate") {
+    const auto c = th::cfg();
+    g_std_threads_left = 1;                     // the 1st pool thread starts, the 2nd fails
+    CHECK_THROWS_AS(VecEnv(c, 4, 0, 4), std::system_error);
+    g_std_threads_left = -1;
+    VecEnv ok(c, 4, 0, 4);                      // disarmed: the pool starts normally
+    CHECK(ok.num_threads() == 4);
+}
+#endif
