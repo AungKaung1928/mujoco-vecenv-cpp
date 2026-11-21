@@ -31,6 +31,9 @@
 namespace vecenv {
 
 constexpr int kMaxWorkers = 8;   // the 8-of-14 thread budget on the box this was written on
+// Pause instructions a worker spins before it blocks: 0.4-1.1 ms on a Core Ultra 5
+// 225H (bench/pause_cost.cpp), since one pause is ~100+ cycles on recent Intel cores.
+constexpr int kSpinIterations = 20000;
 
 class VecEnv {
 public:

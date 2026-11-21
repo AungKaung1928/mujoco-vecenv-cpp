@@ -207,8 +207,8 @@ observations with `==`, and runs the same 260 steps as three sequential `Env`s, 
 included. That test is the one the TSan job in CI exists for.
 
 **Generation counter, spin then block.** The caller publishes the action batch, increments an
-atomic generation and acts as worker 0; the T−1 pool threads spin on the counter for tens of
-microseconds and then block on a condition variable. An idle `VecEnv` (the policy is thinking)
+atomic generation and acts as worker 0; the T−1 pool threads spin on the counter for 20,000 `pause`
+instructions (0.4-1.1 ms over two runs on the Core Ultra 5 225H, `./build/pause_cost`) and then block on a condition variable. An idle `VecEnv` (the policy is thinking)
 burns nothing, and a busy one pays no futex per step. Acquire/release on the counter and on
 the completion count is what makes the action and observation buffers visible without a lock.
 

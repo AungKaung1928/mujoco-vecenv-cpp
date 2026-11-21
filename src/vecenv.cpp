@@ -13,9 +13,6 @@
 
 namespace vecenv {
 
-namespace {
-constexpr int kSpinIterations = 20000;   // tens of microseconds before blocking
-}
 
 VecEnv::VecEnv(const EnvConfig& cfg, int n, std::uint64_t seed, int threads, bool allow_overcommit)
     : n_(n), threads_(threads), cfg_(cfg) {
