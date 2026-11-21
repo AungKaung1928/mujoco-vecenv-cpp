@@ -77,3 +77,15 @@ def test_sustained_row():
     want = (f"{s['band_low']:,.0f}–{s['band_high']:,.0f} ({band:.0f}% band), peak {s['peak']:,.0f} | "
             f"{len(s['rates'])} × {s['window_s']} s windows")
     assert want in _row(f"C++ sustained, {s['sustained_threads']} threads"), want
+
+
+def test_cpp_case_count():
+    """The C++ case count the README states is the number of TEST_CASEs in tests/cpp."""
+    import glob
+    import re
+    n = sum(len(re.findall(r"^TEST_CASE\(", open(f, encoding="utf-8").read(), re.M))
+            for f in glob.glob(os.path.join(REPO, "tests", "cpp", "*.cpp")))
+    with open(os.path.join(REPO, "README.md"), encoding="utf-8") as f:
+        readme = f.read()
+    for claim in (f"{n} cases /", f"{n} C++ cases", f"doctest, {n} cases"):
+        assert claim in readme, claim

@@ -46,7 +46,7 @@ flowchart LR
 | PPO 50M, Python env | return of 500 · survival | 348.1 ± 8.1 · 0.87 ± 0.14 | same protocol |
 | PD hold-pose | return of 500 | 175.8 ± 0.2 | baseline, no learning |
 | PPO 50M wall-clock | C++ vs Python | 3.1 h vs 4.0–4.4 h, 1.25x–1.43x | per training seed, same laptop |
-| Tests | C++ · Python · CI | 34 cases / 417,482 assertions · 44 tests · ASan+UBSan and TSan | every commit, microduck-rl pinned |
+| Tests | C++ · Python · CI | 35 cases / 417,484 assertions · 52 tests · ASan+UBSan and TSan | every commit, microduck-rl pinned |
 
 **Key points**
 
@@ -92,7 +92,7 @@ per run against 4.0–4.4 h.
 | `_vecenv_cpp`, `vecenv_cpp` | `python/` | pybind11 module and the drop-in `VecEnv`; `scripts/ppo_cpp.py` runs microduck-rl's PPO on it |
 | `bench_vecenv` | `bench/bench_vecenv.cpp` | the sweep and sustained protocol of microduck-rl's `bench.py`, plus a `bare` mode for the physics alone |
 | `compare.py` | `bench/compare.py` | Python processes vs C++ threads, alternating, same hour, same box |
-| tests | `tests/cpp`, `tests/py` | 34 C++ cases (417,482 assertions), 44 Python tests; CI runs them under ASan+UBSan and TSan too |
+| tests | `tests/cpp`, `tests/py` | 35 C++ cases (417,484 assertions), 52 Python tests; CI runs them under ASan+UBSan and TSan too |
 
 3,594 lines of own code. doctest is vendored (MIT). MuJoCo comes from the pip wheel: the
 headers and `libmujoco.so` ship inside it, so there is nothing to install system-wide, and
@@ -476,7 +476,7 @@ spread is why the ratio is quoted per stage and not as a single number.
 
 ## Tests
 
-C++ (`./build/vecenv_tests`, doctest, 34 cases, 417,482 assertions): the observation is 48 finite floats with the
+C++ (`./build/vecenv_tests`, doctest, 35 cases, 417,484 assertions): the observation is 48 finite floats with the
 float32 scale; zero action commands STAND exactly and out-of-range actions clip to the joint
 limits; projected gravity reads (0, 0, −1) upright and stays a unit vector through 120 steps of
 thrashing; `done` fires once, on step 250, as a truncation; reward equals the ordered sum of
@@ -490,14 +490,15 @@ compounds; each env owns its model; sensor noise touches only the IMU blocks; 1,
 threads agree; N threaded envs equal N sequential ones; the thread budget is enforced; PCG64
 determinism, ranges and moments; the numpy summation order with a provably different input.
 
-Python (`pytest tests/py`, 44 tests, three of them for `scripts/aggregate_ppo_seeds.py`): the equality cases above at three seeds each plus two
+Python (`pytest tests/py`, 52 tests, three of them for `scripts/aggregate_ppo_seeds.py`): the equality cases above at three seeds each plus two
 DR cases at two seeds; the push-shift sensitivity check; PCG64 raw/double/uniform against
 numpy's internal state at three seeds; header, library and wheel are one MuJoCo version;
 constants, scale table, term names and DR ranges equal the Python module's; the drop-in
 `VecEnv` has `vec_env.VecEnv`'s shapes, dtypes, info keys, `terminal_obs` on every done,
 `with_terms`, `reset(seed=)` replay and bare `reset()` semantics; thread count does not change
 the numbers; microduck-rl's `DomainRandomizer` object is accepted as `dr=`; bad kwargs,
-nine threads and an unknown variant are refused.
+nine threads and an unknown variant are refused; seven tests recompute the "At a glance" rows from
+their `runs/*.json`.
 
 CI: the Release build and both suites against microduck-rl at a pinned commit with the
 upstream assets fetched; the C++ suite again under `-fsanitize=address,undefined` and under
