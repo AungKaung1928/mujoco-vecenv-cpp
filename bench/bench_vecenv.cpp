@@ -95,6 +95,7 @@ Args parse(int argc, char** argv) {
     }
     if (a.ref_seconds <= 0) a.ref_seconds = a.seconds / 2;
     if (a.mode != "env" && a.mode != "bare") throw std::runtime_error("--mode must be env or bare");
+    if (a.windows < 2) throw std::runtime_error("--windows must be >= 2: the plateau band compares the last 2+");
     return a;
 }
 
