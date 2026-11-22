@@ -113,6 +113,18 @@ TEST_CASE("close is idempotent and stepping a closed VecEnv throws") {
     CHECK_THROWS_AS(v.step(a.data()), std::runtime_error);
 }
 
+TEST_CASE("stepping before reset throws on the calling thread, also with worker threads") {
+    // Env::step throws before reset(); on a pool thread that exception would be std::terminate.
+    const auto c = th::cfg();
+    std::vector<double> a(4 * kNAct, 0.0);
+    for (int threads : {1, 4}) {
+        VecEnv v(c, 4, 0, threads);
+        CHECK_THROWS_AS(v.step(a.data()), std::runtime_error);
+        v.reset();
+        CHECK_NOTHROW(v.step(a.data()));
+    }
+}
+
 #if !defined(__SANITIZE_ADDRESS__) && !defined(__SANITIZE_THREAD__)
 // Sanitizers interpose pthread_create themselves, so this seam runs in the plain build only.
 // The test binary's own pthread_create wins over libc's (symbol interposition), also for
@@ -129,18 +141,6 @@ extern "C" int pthread_create(pthread_t* t, const pthread_attr_t* a, void* (*f)(
                                  std::strstr(info.dli_fname, "libstdc++");
     if (from_std_thread && g_std_threads_left.load() >= 0 && g_std_threads_left.fetch_sub(1) == 0) return EAGAIN;
     return real(t, a, f, arg);
-}
-
-TEST_CASE("stepping before reset throws on the calling thread, also with worker threads") {
-    // Env::step throws before reset(); on a pool thread that exception would be std::terminate.
-    const auto c = th::cfg();
-    std::vector<double> a(4 * kNAct, 0.0);
-    for (int threads : {1, 4}) {
-        VecEnv v(c, 4, 0, threads);
-        CHECK_THROWS_AS(v.step(a.data()), std::runtime_error);
-        v.reset();
-        CHECK_NOTHROW(v.step(a.data()));
-    }
 }
 
 TEST_CASE("a worker thread that cannot be started is an exception, not std::terminate") {
