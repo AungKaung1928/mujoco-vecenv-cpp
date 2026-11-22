@@ -117,3 +117,15 @@ def test_results_key_points():
     assert f"efficiency at 8 is {100 * r8['cpp_efficiency']:.0f}% under the Python-driven protocol" in text
     assert f"({100 * r8['python_efficiency']:.0f}% under the same Python-driven protocol)" in text
     assert f"(Python processes {100 * r8['python_efficiency']:.0f}% in the same runs)" in text
+
+
+def test_diagram_numbers():
+    """The mermaid diagram repeats the 8-worker rates, the ratio range and the contract count."""
+    with open(os.path.join(REPO, "README.md"), encoding="utf-8") as f:
+        readme = f.read()
+    r8 = next(r for r in _load("compare_main.json")["rows"] if r["workers"] == 8)
+    rc = next(r for r in _load("compare_contended.json")["rows"] if r["workers"] == 8)
+    c = _load("contract.json")
+    assert f'"{r8["python"]:,.0f} env-steps/s at 8 workers"' in readme
+    assert f'"{r8["cpp"]:,.0f} env-steps/s at 8 workers<br/>{r8["ratio"]:.1f}–{rc["ratio"]:.1f}x' in readme
+    assert f'"{c["bit_identical"]:,} / {c["observations"]:,} observations bit-identical' in readme
