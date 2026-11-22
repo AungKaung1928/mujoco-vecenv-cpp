@@ -106,7 +106,7 @@ The build sets `-ffp-contract=off`: a fused multiply-add rounds once where numpy
 
 ### Result
 
-`python scripts/contract_report.py`, one core, about a minute. MuJoCo 3.12.0, numpy 2.2.6,
+`python scripts/contract_report.py`, one core, 14 s on the laptop (2026-11-23). MuJoCo 3.12.0, numpy 2.2.6,
 Python 3.10.12, g++ 11.4, this laptop, 2026-09-22 (`runs/contract.json`):
 
 | episodes | observations compared | bit-identical | max abs diff (f32) | max rel reward diff | max abs term diff | info mismatches |
@@ -492,7 +492,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j4
 ./build/vecenv_tests
 python -m pytest tests/py -q
-python scripts/contract_report.py          # the equality table, one core, a minute
+python scripts/contract_report.py          # the equality table, one core, ~15 s
 ```
 
 `./verify.sh` does all of that in order and prints the benchmark commands at the end. Set

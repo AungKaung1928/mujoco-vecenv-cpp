@@ -3,7 +3,7 @@
 
     python scripts/contract_report.py            # -> runs/contract.json, prints markdown
 
-Single core, a minute. Nothing here is a throughput number.
+Single core, ~15 s (14 s measured 2026-11-23). Nothing here is a throughput number.
 """
 import json
 import os

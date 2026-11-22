@@ -55,7 +55,7 @@ cd mujoco-vecenv-cpp
 python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt   # first time only
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j4
 ./build/vecenv_tests && python -m pytest tests/py -q
-python scripts/contract_report.py   # the equality table: max abs diff 0.0, about a minute on one core
+python scripts/contract_report.py   # the equality table: max abs diff 0.0, 14 s on one laptop core
 ```
 
 `./verify.sh` runs the same steps in order. Sanitizer builds, the PPO run and the Python API: [docs/RESULTS.md](docs/RESULTS.md#reproducing).
