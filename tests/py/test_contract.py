@@ -54,3 +54,29 @@ def test_a_wrong_push_is_detected(py, cpp):
         o2 = ce.step(a)[0]
         diverged |= not np.array_equal(o1, o2)
     assert diverged
+
+
+def test_a_nan_from_cpp_is_not_a_match(py, cpp, monkeypatch):
+    """A NaN must fail the tolerances: builtin max(running, nan) keeps the running value."""
+    import numpy as np
+    real_env = contract.Env
+
+    class NanAt10:
+        def __init__(self, *a):
+            self.e, self.t = real_env(*a), 0
+
+        def reset(self, *a):
+            return self.e.reset(*a)
+
+        def step(self, a, terms):
+            o, r, d, i = self.e.step(a, terms)
+            self.t += 1
+            if self.t == 10:
+                o, r = np.full_like(o, np.nan), float("nan")
+                i["terms"] = {k: float("nan") for k in i["terms"]}
+            return o, r, d, i
+
+    monkeypatch.setattr(contract, "Env", NanAt10)
+    r = contract.compare_episode(py, dict(variant="groundcontact", reward="v2"), 0, steps=20)
+    for k in ("obs_max_abs_diff", "reward_max_rel_diff", "term_max_abs_diff"):
+        assert not r[k] <= 1e-6, (k, r[k])

@@ -13,6 +13,11 @@ import numpy as np
 from . import Env, episode_params, make_config
 
 
+def _worst(a, b):
+    """max that keeps a NaN: builtin max(a, nan) returns a, which would read as a match."""
+    return float(np.maximum(a, b))
+
+
 def compare_episode(py, kw, seed, steps=250, dr=False, action_seed=None):
     """`py` is a namespace with microduck-rl's env/common/dr modules.
     `kw` are MicroduckEnv keyword arguments (variant, reward, latency, ...).
@@ -40,16 +45,16 @@ def compare_episode(py, kw, seed, steps=250, dr=False, action_seed=None):
         a = rng.uniform(-1.0, 1.0, 14)
         o1, r1, d1, i1 = pe.step(a)
         o2, r2, d2, i2 = ce.step(a, True)
-        obs_max = max(obs_max, float(np.abs(o1.astype(np.float64) - o2.astype(np.float64)).max()))
+        obs_max = _worst(obs_max, float(np.abs(o1.astype(np.float64) - o2.astype(np.float64)).max()))
         obs_exact += int(np.array_equal(o1, o2))
-        rew_rel = max(rew_rel, abs(r1 - r2) / max(abs(r1), 1e-12))
+        rew_rel = _worst(rew_rel, abs(r1 - r2) / max(abs(r1), 1e-12))
         for k, v in i1["terms"].items():
-            term_abs = max(term_abs, abs(v - i2["terms"][k]))
+            term_abs = _worst(term_abs, abs(v - i2["terms"][k]))
         for k in ("pushed", "fallen", "t", "truncated", "terminated"):
             if i1[k] != i2[k]:
                 info_mismatch.append((t, k, i1[k], i2[k]))
-        height_abs = max(height_abs, abs(i1["trunk_height"] - i2["trunk_height"]))
-        cos_abs = max(cos_abs, abs(i1["upright_cos"] - i2["upright_cos"]))
+        height_abs = _worst(height_abs, abs(i1["trunk_height"] - i2["trunk_height"]))
+        cos_abs = _worst(cos_abs, abs(i1["upright_cos"] - i2["upright_cos"]))
         if d1 != d2:
             info_mismatch.append((t, "done", d1, d2))
         done_py, done_cpp = d1, d2

@@ -25,6 +25,7 @@ import env      # noqa: E402
 import mujoco   # noqa: E402
 
 from vecenv_cpp import contract, mujoco_version   # noqa: E402
+import numpy as np                                  # noqa: E402
 
 py = types.SimpleNamespace(vec_env=vec_env, common=common, dr=dr, env=env)
 rows = []
@@ -37,9 +38,9 @@ for kw in contract.DR_CASES:
 
 steps = sum(r["obs_compared"] for r in rows)
 exact = sum(r["obs_exact_steps"] for r in rows)
-worst_obs = max(r["obs_max_abs_diff"] for r in rows)
-worst_rew = max(r["reward_max_rel_diff"] for r in rows)
-worst_term = max(r["term_max_abs_diff"] for r in rows)
+worst_obs = float(np.max([r["obs_max_abs_diff"] for r in rows]))  # np.max keeps a NaN; builtin max can drop it
+worst_rew = float(np.max([r["reward_max_rel_diff"] for r in rows]))
+worst_term = float(np.max([r["term_max_abs_diff"] for r in rows]))
 mismatch = sum(len(r["info_mismatches"]) for r in rows)
 
 print(f"| episodes | observations compared | bit-identical | max abs diff (f32) | max rel reward diff | max abs term diff | info mismatches |")
