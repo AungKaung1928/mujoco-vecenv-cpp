@@ -1,6 +1,6 @@
 # mujoco-vecenv-cpp
 
-Threaded MuJoCo vector environment in C++ that returns the same observations, rewards and flags as the Python reference, bit for bit (6,275 / 6,275 observations), at 1.93x the env-steps/s on 8 workers.
+Threaded MuJoCo vector environment in C++ that returns the same observations, rewards and flags as the Python reference, bit for bit (6,275 / 6,275 observations), at 1.93x the Python env-steps/s on 8 workers.
 
 ```mermaid
 flowchart LR
