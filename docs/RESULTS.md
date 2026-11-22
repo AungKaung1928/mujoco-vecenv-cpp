@@ -45,7 +45,7 @@ per run against 4.0–4.4 h.
 | `_vecenv_cpp`, `vecenv_cpp` | `python/` | pybind11 module and the drop-in `VecEnv`; `scripts/ppo_cpp.py` runs microduck-rl's PPO on it |
 | `bench_vecenv` | `bench/bench_vecenv.cpp` | the sweep and sustained protocol of microduck-rl's `bench.py`, plus a `bare` mode for the physics alone |
 | `compare.py` | `bench/compare.py` | Python processes vs C++ threads, alternating, same hour, same box |
-| tests | `tests/cpp`, `tests/py` | 36 C++ cases (417,491 assertions), 60 Python tests; CI runs the C++ cases under ASan+UBSan and TSan too (35 there: the `pthread_create` seam test is plain-build only) |
+| tests | `tests/cpp`, `tests/py` | 37 C++ cases (417,495 assertions), 60 Python tests; CI runs the C++ cases under ASan+UBSan and TSan too (36 there: the `pthread_create` seam test is plain-build only) |
 
 3,594 lines of own code. doctest is vendored (MIT). MuJoCo comes from the pip wheel: the
 headers and `libmujoco.so` ship inside it, so there is nothing to install system-wide, and
@@ -419,7 +419,7 @@ spread is why the ratio is quoted per stage and not as a single number.
 
 ## Tests
 
-C++ (`./build/vecenv_tests`, doctest, 36 cases, 417,491 assertions): the observation is 48 finite floats with the
+C++ (`./build/vecenv_tests`, doctest, 37 cases, 417,495 assertions): the observation is 48 finite floats with the
 float32 scale; zero action commands STAND exactly and out-of-range actions clip to the joint
 limits; projected gravity reads (0, 0, −1) upright and stays a unit vector through 120 steps of
 thrashing; `done` fires once, on step 250, as a truncation; reward equals the ordered sum of

@@ -121,6 +121,28 @@ TEST_CASE("step before reset is refused") {
     CHECK_THROWS_AS(e.step(a, o, &info), std::runtime_error);
 }
 
+TEST_CASE("push schedules: distinct sorted steps, both ends of [25, 225) reachable, speeds in range") {
+    // The contract injects Python's drawn pushes, so this is the only check on the C++ draw.
+    const auto c = th::cfg();
+    Env e(c, th::proto(), 3);
+    bool sorted_distinct = true, speed_ok = true;
+    int lo_seen = 1 << 30, hi_seen = -1;
+    for (int r = 0; r < 1000; ++r) {
+        e.reset();
+        const auto& at = e.push_at();
+        for (std::size_t i = 1; i < at.size(); ++i) sorted_distinct = sorted_distinct && at[i - 1] < at[i];
+        for (int t : at) { lo_seen = std::min(lo_seen, t); hi_seen = std::max(hi_seen, t); }
+        for (const auto& v : e.push_vel()) {
+            const double sp = std::hypot(v[0], v[1]);
+            speed_ok = speed_ok && sp >= c.push_speed_lo - 1e-12 && sp <= c.push_speed_hi + 1e-12;
+        }
+    }
+    CHECK(sorted_distinct);
+    CHECK(speed_ok);
+    CHECK(lo_seen == 25);    // an off-by-one in the partial Fisher-Yates would make an end unreachable
+    CHECK(hi_seen == 224);
+}
+
 TEST_CASE("different seeds draw different push schedules; pushes land on the scheduled step") {
     Env e1(th::cfg(), th::proto(), 1), e2(th::cfg(), th::proto(), 2);
     e1.reset(); e2.reset();

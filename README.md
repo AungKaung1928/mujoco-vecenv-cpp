@@ -41,7 +41,7 @@ flowchart LR
 | PPO 50M, Python env | return of 500 · survival | 348.1 ± 8.1 · 0.87 ± 0.14 | same protocol |
 | PD hold-pose | return of 500 | 175.8 ± 0.2 | baseline, no learning |
 | PPO 50M wall-clock | C++ vs Python | 3.1 h vs 4.0–4.4 h, 1.25x–1.43x | per training seed, same laptop |
-| Tests | C++ · Python · CI | 36 cases / 417,491 assertions · 60 tests · ASan+UBSan and TSan | every commit, microduck-rl pinned |
+| Tests | C++ · Python · CI | 37 cases / 417,495 assertions · 60 tests · ASan+UBSan and TSan | every commit, microduck-rl pinned |
 
 ## Quick start
 
