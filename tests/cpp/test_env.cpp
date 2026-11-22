@@ -188,6 +188,28 @@ TEST_CASE("the observation and the reward are one instant: a second forward pass
     CHECK(worst_h < 1e-9);
 }
 
+TEST_CASE("init noise matches microduck-rl: qpos +-n, qvel +-5n around STAND (n = 0.02)") {
+    // The contract injects Python's initial state, so this is the only check on the C++ draw.
+    auto c = th::cfg();
+    c.init_noise = 0.0;
+    Env e0(c, th::proto(), 0);
+    e0.reset();
+    c.init_noise = 0.02;   // STAND is 0.297 rad clear of every limit: no clipping at this size
+    Env e(c, th::proto(), 11);
+    double dq = 0.0, dv = 0.0;
+    for (int r = 0; r < 300; ++r) {
+        e.reset();
+        for (int i = 0; i < kNAct; ++i) {
+            dq = std::max(dq, std::fabs(e.data()->qpos[e.index().qpos_i[i]] - e0.data()->qpos[e0.index().qpos_i[i]]));
+            dv = std::max(dv, std::fabs(e.data()->qvel[e.index().qvel_i[i]] - e0.data()->qvel[e0.index().qvel_i[i]]));
+        }
+    }
+    CHECK(dq <= 0.02 + 1e-12);
+    CHECK(dq > 0.019);     // 4,200 uniform draws: the max sits at the edge
+    CHECK(dv <= 0.1 + 1e-12);
+    CHECK(dv > 0.095);
+}
+
 TEST_CASE("reset clamps the initial joint state to the limits even at init_noise 0.6") {
     auto c = th::cfg();
     c.init_noise = 0.6;
