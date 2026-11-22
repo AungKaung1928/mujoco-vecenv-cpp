@@ -24,6 +24,7 @@ TEST_CASE("300 samples stay inside the declared ranges; none() is the nominal cl
     DRConfig cfg;
     PCG64 rng(0);
     const auto lo = act_param_lo(), hi = act_param_hi();
+    bool latency_seen[3] = {false, false, false};
     for (int i = 0; i < 300; ++i) {
         const DRFactors f = sample_dr(cfg, rng);
         const double a[5] = {f.actuator.damping, f.actuator.frictionloss, f.actuator.armature, f.actuator.kp, f.actuator.forcerange};
@@ -31,9 +32,12 @@ TEST_CASE("300 samples stay inside the declared ranges; none() is the nominal cl
         CHECK(f.mass_scale >= 0.85); CHECK(f.mass_scale <= 1.15);
         CHECK(f.floor_friction >= 0.6); CHECK(f.floor_friction <= 1.2);
         CHECK(f.latency >= 0); CHECK(f.latency <= 2);
+        if (f.latency >= 0 && f.latency <= 2) latency_seen[f.latency] = true;
         CHECK(f.init_noise >= 0.02); CHECK(f.init_noise <= 0.3);
         CHECK(f.sensor_noise);
     }
+    // microduck-rl samples latency with integers(0, 2 + 1): 2 is included, so it must occur here too
+    CHECK(latency_seen[0]); CHECK(latency_seen[1]); CHECK(latency_seen[2]);
     const DRFactors f0 = sample_dr(DRConfig::none(), rng);
     CHECK(f0.actuator.kp == 0.55);
     CHECK(f0.latency == 0);
