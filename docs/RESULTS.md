@@ -45,7 +45,7 @@ per run against 4.0–4.4 h.
 | `_vecenv_cpp`, `vecenv_cpp` | `python/` | pybind11 module and the drop-in `VecEnv`; `scripts/ppo_cpp.py` runs microduck-rl's PPO on it |
 | `bench_vecenv` | `bench/bench_vecenv.cpp` | the sweep and sustained protocol of microduck-rl's `bench.py`, plus a `bare` mode for the physics alone |
 | `compare.py` | `bench/compare.py` | Python processes vs C++ threads, alternating, same hour, same box |
-| tests | `tests/cpp`, `tests/py` | 36 C++ cases (417,488 assertions), 58 Python tests; CI runs the C++ cases under ASan+UBSan and TSan too (35 there: the `pthread_create` seam test is plain-build only) |
+| tests | `tests/cpp`, `tests/py` | 36 C++ cases (417,488 assertions), 60 Python tests; CI runs the C++ cases under ASan+UBSan and TSan too (35 there: the `pthread_create` seam test is plain-build only) |
 
 3,594 lines of own code. doctest is vendored (MIT). MuJoCo comes from the pip wheel: the
 headers and `libmujoco.so` ship inside it, so there is nothing to install system-wide, and
@@ -433,7 +433,7 @@ compounds; each env owns its model; sensor noise touches only the IMU blocks; 1,
 threads agree; N threaded envs equal N sequential ones; the thread budget is enforced; PCG64
 determinism, ranges and moments; the numpy summation order with a provably different input.
 
-Python (`pytest tests/py`, 58 tests, three of them for `scripts/aggregate_ppo_seeds.py`): the equality cases above at three seeds each plus two
+Python (`pytest tests/py`, 60 tests, three of them for `scripts/aggregate_ppo_seeds.py`): the equality cases above at three seeds each plus two
 DR cases at two seeds; the push-shift sensitivity check; PCG64 raw/double/uniform against
 numpy's internal state at three seeds; header, library and wheel are one MuJoCo version;
 constants, scale table, term names and DR ranges equal the Python module's; the drop-in
