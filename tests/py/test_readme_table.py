@@ -93,6 +93,17 @@ def test_cpp_case_count():
         assert claim in readme, claim
 
 
+def test_cpp_sanitizer_case_count():
+    """RESULTS.md's sanitizer-job count is the TEST_CASEs outside the plain-build-only blocks."""
+    import glob
+    import re
+    guard = re.compile(r"^#if !defined\(__SANITIZE_ADDRESS__\).*?^#endif", re.M | re.S)
+    n = sum(len(re.findall(r"^TEST_CASE\(", guard.sub("", open(f, encoding="utf-8").read()), re.M))
+            for f in glob.glob(os.path.join(REPO, "tests", "cpp", "*.cpp")))
+    with open(os.path.join(REPO, "docs", "RESULTS.md"), encoding="utf-8") as f:
+        assert f"({n} there:" in f.read(), n
+
+
 def test_headline_sentence():
     """The one-line summary under the title repeats two table numbers; it must move with them."""
     c = _load("contract.json")
