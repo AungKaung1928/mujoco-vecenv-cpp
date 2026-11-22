@@ -86,6 +86,7 @@ private:
     std::mutex mtx_;
     std::condition_variable cv_;
     bool closed_ = false;
+    bool started_ = false;   // set by reset(); Env::step throws before it, fatal on a pool thread
 };
 
 }  // namespace vecenv

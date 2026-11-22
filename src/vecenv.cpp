@@ -68,6 +68,7 @@ void VecEnv::reset() {
         done_[static_cast<std::size_t>(i)] = 0;
         rew_[static_cast<std::size_t>(i)] = 0.0;
     }
+    started_ = true;
 }
 
 void VecEnv::run_env_(int i) {
@@ -111,6 +112,7 @@ void VecEnv::worker_(int tid) {
 
 void VecEnv::step(const double* actions) {
     if (closed_) throw std::runtime_error("VecEnv is closed");
+    if (!started_) throw std::runtime_error("call reset() before step()");
     std::copy(actions, actions + static_cast<std::size_t>(n_) * kNAct, actions_.begin());
     if (threads_ <= 1) {
         for (int i = 0; i < n_; ++i) run_env_(i);

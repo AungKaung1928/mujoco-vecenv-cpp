@@ -131,6 +131,18 @@ extern "C" int pthread_create(pthread_t* t, const pthread_attr_t* a, void* (*f)(
     return real(t, a, f, arg);
 }
 
+TEST_CASE("stepping before reset throws on the calling thread, also with worker threads") {
+    // Env::step throws before reset(); on a pool thread that exception would be std::terminate.
+    const auto c = th::cfg();
+    std::vector<double> a(4 * kNAct, 0.0);
+    for (int threads : {1, 4}) {
+        VecEnv v(c, 4, 0, threads);
+        CHECK_THROWS_AS(v.step(a.data()), std::runtime_error);
+        v.reset();
+        CHECK_NOTHROW(v.step(a.data()));
+    }
+}
+
 TEST_CASE("a worker thread that cannot be started is an exception, not std::terminate") {
     const auto c = th::cfg();
     g_std_threads_left = 1;                     // the 1st pool thread starts, the 2nd fails
