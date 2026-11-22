@@ -91,3 +91,12 @@ def test_cpp_case_count():
             readme += f.read()
     for claim in (f"{n} cases /", f"{n} C++ cases", f"doctest, {n} cases"):
         assert claim in readme, claim
+
+
+def test_headline_sentence():
+    """The one-line summary under the title repeats two table numbers; it must move with them."""
+    c = _load("contract.json")
+    r8 = next(r for r in _load("compare_main.json")["rows"] if r["workers"] == 8)
+    with open(os.path.join(REPO, "README.md"), encoding="utf-8") as f:
+        head = " ".join(f.read().split("\n\n")[1].split())
+    assert f"bit for bit ({c['bit_identical']:,} / {c['observations']:,} observations), at {r8['ratio']:.2f}x" in head, head
