@@ -80,12 +80,14 @@ def test_sustained_row():
 
 
 def test_cpp_case_count():
-    """The C++ case count the README states is the number of TEST_CASEs in tests/cpp."""
+    """The C++ case count README.md and docs/RESULTS.md state is the number of TEST_CASEs in tests/cpp."""
     import glob
     import re
     n = sum(len(re.findall(r"^TEST_CASE\(", open(f, encoding="utf-8").read(), re.M))
             for f in glob.glob(os.path.join(REPO, "tests", "cpp", "*.cpp")))
-    with open(os.path.join(REPO, "README.md"), encoding="utf-8") as f:
-        readme = f.read()
+    readme = ""
+    for doc in ("README.md", os.path.join("docs", "RESULTS.md")):
+        with open(os.path.join(REPO, doc), encoding="utf-8") as f:
+            readme += f.read()
     for claim in (f"{n} cases /", f"{n} C++ cases", f"doctest, {n} cases"):
         assert claim in readme, claim
