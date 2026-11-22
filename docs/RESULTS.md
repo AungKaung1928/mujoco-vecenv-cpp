@@ -5,7 +5,7 @@ Design, equality contract, throughput and PPO results behind the short [README](
 **Key points**
 
 - **Bit-identical, tested on every commit.** 6,275 of 6,275 observations, every reward and every flag match across 25 episodes; it took matching numpy's pairwise `np.mean` (20,000/20,000 vs 15,831 for a sequential loop), libm `pow(x, 2.0)` instead of `x * x` (1,621 mismatches in 2,000,000), the float32 `OBS_SCALE` (0.05000000074505806) and MuJoCo's second `mj_forward` warm-start.
-- **Threads buy a 2x constant, not scaling.** 12,327 vs 6,385 env-steps/s at 8 workers (1.93x, 2.04x contended), but efficiency at 8 is 32% under the Python-driven protocol, 45% in the pure C++ sweep, 42% for Python processes: the cap on this 14-core laptop is outside process isolation.
+- **Threads buy a 2x constant, not scaling.** 12,327 vs 6,385 env-steps/s at 8 workers (1.93x, 2.04x contended), but efficiency at 8 is 32% under the Python-driven protocol, 45% in the pure C++ sweep, 42% for Python processes in microduck-rl's own sweep (34% under the same Python-driven protocol): the cap on this 14-core laptop is outside process isolation.
 - **Same policy, 0.70 of the training time.** Over 3 training seeds the C++-trained policies score 339.4 ± 2.3 against 348.1 ± 8.1 (Welch t −1.8, df 2.3), in 3.1 h against 4.0–4.4 h; the end-to-end gain is 1.25x–1.43x, not 2x, because the policy forward pass and update are single-threaded on the same critical path (one process at 470% CPU with 8 env threads).
 - **The seed-0 survival gap was noise.** 0.95 vs 0.73 survival held for those two policies, but three seeds span 0.87–1.00 (C++) and 0.73–1.00 (Python); and the chunk-1 step-size failure (clip fraction 0.69, KL spike to 66) reproduced on both backends, so it belongs to the configuration.
 - **Limits.** Same seed draws different pushes (C++ splitmix vs numpy SeedSequence), so backends compare statistically, never step by step; bit equality is shown on one machine, one compiler, one libm; sensor noise is not contract-tested; the bare sweep carries a TRENDING verdict from a detector that fires on this box's 5% single-thread scatter; one robot, no rendering.
@@ -274,7 +274,7 @@ The guard's verdict is recorded in both JSONs.
 
 So the decision rule is settled: the C++ environment is worth its build step for training.
 The efficiency question is not improved by it: 32% at 8 workers under this Python-driven
-protocol, 45% in the pure C++ sweep, 42% for Python processes. Threads did not buy back the
+protocol (Python processes 34% in the same runs), 45% in the pure C++ sweep, 42% for Python processes in microduck-rl's own sweep. Threads did not buy back the
 scaling loss; they bought a 2x constant factor.
 
 **The finding that matters for microduck-rl:** its Python vector env delivers about 6,400

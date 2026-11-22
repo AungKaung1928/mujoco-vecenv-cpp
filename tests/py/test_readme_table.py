@@ -100,3 +100,20 @@ def test_headline_sentence():
     with open(os.path.join(REPO, "README.md"), encoding="utf-8") as f:
         head = " ".join(f.read().split("\n\n")[1].split())
     assert f"bit for bit ({c['bit_identical']:,} / {c['observations']:,} observations), at {r8['ratio']:.2f}x" in head, head
+
+
+def test_results_key_points():
+    """docs/RESULTS.md key points: Welch test, survival spans, seed-0 gap, 8-worker efficiency."""
+    with open(os.path.join(REPO, "docs", "RESULTS.md"), encoding="utf-8") as f:
+        text = " ".join(f.read().split())
+    s = _load("ppo_backend_seeds.json")
+    t = s["cpp_minus_python"]["return_mean"]
+    assert f"(Welch t {t['t']:.1f}, df {t['df']:.1f})".replace("-", "−") in text
+    sv = {b: s[b]["summary"]["survival_mean"] for b in ("cpp", "python")}
+    assert (f"three seeds span {sv['cpp']['min']:.2f}–{sv['cpp']['max']:.2f} (C++) and "
+            f"{sv['python']['min']:.2f}–{sv['python']['max']:.2f} (Python)") in text
+    assert f"{sv['cpp']['values'][0]:.2f} vs {sv['python']['values'][0]:.2f} survival" in text
+    r8 = next(r for r in _load("compare_main.json")["rows"] if r["workers"] == 8)
+    assert f"efficiency at 8 is {100 * r8['cpp_efficiency']:.0f}% under the Python-driven protocol" in text
+    assert f"({100 * r8['python_efficiency']:.0f}% under the same Python-driven protocol)" in text
+    assert f"(Python processes {100 * r8['python_efficiency']:.0f}% in the same runs)" in text
