@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <set>
 #include <vector>
@@ -25,9 +26,14 @@ TEST_CASE("300 samples stay inside the declared ranges; none() is the nominal cl
     PCG64 rng(0);
     const auto lo = act_param_lo(), hi = act_param_hi();
     bool latency_seen[3] = {false, false, false};
+    // observed min/max per factor: 5 actuator params, mass, friction, init noise
+    double mn[8], mx[8];
+    for (int k = 0; k < 8; ++k) { mn[k] = 1e300; mx[k] = -1e300; }
     for (int i = 0; i < 300; ++i) {
         const DRFactors f = sample_dr(cfg, rng);
         const double a[5] = {f.actuator.damping, f.actuator.frictionloss, f.actuator.armature, f.actuator.kp, f.actuator.forcerange};
+        const double all[8] = {a[0], a[1], a[2], a[3], a[4], f.mass_scale, f.floor_friction, f.init_noise};
+        for (int k = 0; k < 8; ++k) { mn[k] = std::min(mn[k], all[k]); mx[k] = std::max(mx[k], all[k]); }
         for (int k = 0; k < 5; ++k) { CHECK(a[k] >= lo[k]); CHECK(a[k] <= hi[k]); }
         CHECK(f.mass_scale >= 0.85); CHECK(f.mass_scale <= 1.15);
         CHECK(f.floor_friction >= 0.6); CHECK(f.floor_friction <= 1.2);
@@ -38,6 +44,11 @@ TEST_CASE("300 samples stay inside the declared ranges; none() is the nominal cl
     }
     // microduck-rl samples latency with integers(0, 2 + 1): 2 is included, so it must occur here too
     CHECK(latency_seen[0]); CHECK(latency_seen[1]); CHECK(latency_seen[2]);
+    // inside the range is not enough: a range collapsed to its lower bound passes the
+    // checks above. 300 uniform draws cover > 98 % of a range with near certainty.
+    const double rlo[8] = {lo[0], lo[1], lo[2], lo[3], lo[4], 0.85, 0.6, 0.02};
+    const double rhi[8] = {hi[0], hi[1], hi[2], hi[3], hi[4], 1.15, 1.2, 0.3};
+    for (int k = 0; k < 8; ++k) CHECK(mx[k] - mn[k] > 0.9 * (rhi[k] - rlo[k]));
     const DRFactors f0 = sample_dr(DRConfig::none(), rng);
     CHECK(f0.actuator.kp == 0.55);
     CHECK(f0.latency == 0);
