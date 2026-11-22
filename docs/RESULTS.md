@@ -45,7 +45,7 @@ per run against 4.0–4.4 h.
 | `_vecenv_cpp`, `vecenv_cpp` | `python/` | pybind11 module and the drop-in `VecEnv`; `scripts/ppo_cpp.py` runs microduck-rl's PPO on it |
 | `bench_vecenv` | `bench/bench_vecenv.cpp` | the sweep and sustained protocol of microduck-rl's `bench.py`, plus a `bare` mode for the physics alone |
 | `compare.py` | `bench/compare.py` | Python processes vs C++ threads, alternating, same hour, same box |
-| tests | `tests/cpp`, `tests/py` | 38 C++ cases (417,507 assertions), 74 Python tests; CI runs the C++ cases under ASan+UBSan and TSan too (37 there: the `pthread_create` seam test is plain-build only) |
+| tests | `tests/cpp`, `tests/py` | 38 C++ cases (417,507 assertions), 77 Python tests; CI runs the C++ cases under ASan+UBSan and TSan too (37 there: the `pthread_create` seam test is plain-build only) |
 
 3,594 lines of own code. doctest is vendored (MIT). MuJoCo comes from the pip wheel: the
 headers and `libmujoco.so` ship inside it, so there is nothing to install system-wide, and
@@ -433,9 +433,10 @@ compounds; each env owns its model; sensor noise touches only the IMU blocks; 1,
 threads agree; N threaded envs equal N sequential ones; the thread budget is enforced; PCG64
 determinism, ranges and moments; the numpy summation order with a provably different input.
 
-Python (`pytest tests/py`, 74 tests, three of them for `scripts/aggregate_ppo_seeds.py`): the equality cases above at three seeds each plus two
+Python (`pytest tests/py`, 77 tests, three of them for `scripts/aggregate_ppo_seeds.py`): the equality cases above at three seeds each plus two
 DR cases at two seeds; every model field the randomiser writes, bit-identical after reset (3 variants x 2 seeds,
-nominal and DR: a +5 % force-limit error under DR passes the equality cases and fails here); the push-shift sensitivity check; PCG64 raw/double/uniform against
+nominal and DR: a +5 % force-limit error under DR passes the equality cases and fails here); every `make_config` /
+`dr_config` keyword read back at non-default values; the push-shift sensitivity check; PCG64 raw/double/uniform against
 numpy's internal state at three seeds; header, library and wheel are one MuJoCo version;
 constants, scale table, term names and DR ranges equal the Python module's; the drop-in
 `VecEnv` has `vec_env.VecEnv`'s shapes, dtypes, info keys, `terminal_obs` on every done,
