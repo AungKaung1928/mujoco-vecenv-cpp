@@ -27,6 +27,11 @@ import mujoco   # noqa: E402
 from vecenv_cpp import contract, mujoco_version   # noqa: E402
 import numpy as np                                  # noqa: E402
 
+_wheel = tuple(int(v) for v in mujoco.__version__.split(".")[:3])
+if mujoco_version() != _wheel[0] * 1_000_000 + _wheel[1] * 1_000 + _wheel[2]:
+    sys.exit(f"mujoco wheel {mujoco.__version__} != C++ libmujoco {mujoco_version()}: the table would compare "
+             "two different simulators. Use the requirements.txt venv; runs/contract.json left untouched.")
+
 py = types.SimpleNamespace(vec_env=vec_env, common=common, dr=dr, env=env)
 rows = []
 for kw in contract.CASES:
