@@ -129,3 +129,19 @@ def test_diagram_numbers():
     assert f'"{r8["python"]:,.0f} env-steps/s at 8 workers"' in readme
     assert f'"{r8["cpp"]:,.0f} env-steps/s at 8 workers<br/>{r8["ratio"]:.1f}–{rc["ratio"]:.1f}x' in readme
     assert f'"{c["bit_identical"]:,} / {c["observations"]:,} observations bit-identical' in readme
+
+
+def test_python_test_count():
+    """The Python test count README.md and docs/RESULTS.md state is what pytest collects."""
+    import re
+    import subprocess
+    import sys
+    out = subprocess.run([sys.executable, "-m", "pytest", os.path.join(REPO, "tests", "py"), "--collect-only",
+                          "-q", "-p", "no:cacheprovider"], capture_output=True, text=True, cwd=REPO).stdout
+    n = int(re.search(r"^(\d+) tests? collected", out, re.M).group(1))
+    readme = ""
+    for doc in ("README.md", os.path.join("docs", "RESULTS.md")):
+        with open(os.path.join(REPO, doc), encoding="utf-8") as f:
+            readme += f.read()
+    for claim in (f"· {n} tests ·", f"{n} Python tests", f"`pytest tests/py`, {n} tests"):
+        assert claim in readme, claim
