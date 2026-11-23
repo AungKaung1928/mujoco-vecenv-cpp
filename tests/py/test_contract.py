@@ -80,3 +80,72 @@ def test_a_nan_from_cpp_is_not_a_match(py, cpp, monkeypatch):
     r = contract.compare_episode(py, dict(variant="groundcontact", reward="v2"), 0, steps=20)
     for k in ("obs_max_abs_diff", "reward_max_rel_diff", "term_max_abs_diff"):
         assert not r[k] <= 1e-6, (k, r[k])
+
+
+def _perturbed(py, monkeypatch, at_reset=False, **change):
+    """compare_episode with the C++ env wrapped: at step 10 (or at reset) one output
+    is changed by a known finite amount. Every field the report claims must see it."""
+    import numpy as np
+    real_env = contract.Env
+
+    class Perturb:
+        def __init__(self, *a):
+            self.e, self.t = real_env(*a), 0
+
+        def reset(self, *a):
+            o = self.e.reset(*a)
+            if at_reset:
+                o = o.copy()
+                o[0] += np.float32(1e-3)
+            return o
+
+        def step(self, a, terms):
+            o, r, d, i = self.e.step(a, terms)
+            self.t += 1
+            if self.t == 10:
+                if "obs" in change:
+                    o = o.copy()
+                    o[3] += np.float32(change["obs"])
+                if "reward" in change:
+                    r = r * (1 + change["reward"])
+                if "info" in change:
+                    i[change["info"]] = not i[change["info"]]
+                if "done" in change:
+                    d = not d
+                if "height" in change:
+                    i["trunk_height"] += change["height"]
+            return o, r, d, i
+
+    monkeypatch.setattr(contract, "Env", Perturb)
+    return contract.compare_episode(py, dict(variant="groundcontact", reward="v2"), 0, steps=20)
+
+
+def test_report_counts_a_finite_obs_difference(py, cpp, monkeypatch):
+    r = _perturbed(py, monkeypatch, obs=1e-3)
+    assert r["obs_exact_steps"] == r["obs_compared"] - 1 and r["obs_max_abs_diff"] > 5e-4
+
+
+def test_report_counts_a_reset_obs_difference(py, cpp, monkeypatch):
+    r = _perturbed(py, monkeypatch, at_reset=True)
+    assert r["obs_exact_steps"] == r["obs_compared"] - 1
+
+
+def test_report_sees_a_one_percent_reward_difference(py, cpp, monkeypatch):
+    r = _perturbed(py, monkeypatch, reward=0.01)
+    assert abs(r["reward_max_rel_diff"] - 0.01) < 1e-6
+
+
+@pytest.mark.parametrize("key", ["pushed", "fallen", "truncated", "terminated"])
+def test_report_lists_an_info_flag_mismatch(py, cpp, monkeypatch, key):
+    r = _perturbed(py, monkeypatch, info=key)
+    assert [m[:2] for m in r["info_mismatches"]] == [(9, key)]
+
+
+def test_report_lists_a_done_mismatch(py, cpp, monkeypatch):
+    r = _perturbed(py, monkeypatch, done=True)
+    assert [m[:2] for m in r["info_mismatches"]] == [(9, "done")]
+
+
+def test_report_measures_trunk_height(py, cpp, monkeypatch):
+    r = _perturbed(py, monkeypatch, height=1e-3)
+    assert abs(r["trunk_height_max_abs_diff"] - 1e-3) < 1e-9
