@@ -101,6 +101,29 @@ TEST_CASE("thread budget: more than 8 threads is refused unless overcommit is ex
     CHECK(v.num_envs() == 9);
     VecEnv w(c, 2, 0, 0);
     CHECK(w.num_threads() == 2);
+    // more threads than envs: capped to one per env before the budget check, so 9 for 3 envs is accepted
+    VecEnv x(c, 3, 0, 9);
+    CHECK(x.num_threads() == 3);
+}
+
+TEST_CASE("reset clears the dones and rewards left by the last step") {
+    const auto c = th::cfg();
+    VecEnv v(c, 4, 100, 2);
+    v.reset();
+    PCG64 r(9);
+    std::vector<double> a(4 * kNAct);
+    bool any_done = false;
+    for (int k = 0; k < 300 && !any_done; ++k) {
+        for (auto& x : a) x = r.uniform(-1.0, 1.0);
+        v.step(a.data());
+        for (int i = 0; i < 4; ++i) any_done = any_done || v.dones()[i] != 0;
+    }
+    REQUIRE(any_done);                // same seeds and actions as the parity test, which crosses an episode end in 300 steps
+    v.reset();
+    for (int i = 0; i < 4; ++i) {
+        CHECK(v.dones()[i] == 0);
+        CHECK(v.rewards()[i] == 0.0);
+    }
 }
 
 TEST_CASE("close is idempotent and stepping a closed VecEnv throws") {
