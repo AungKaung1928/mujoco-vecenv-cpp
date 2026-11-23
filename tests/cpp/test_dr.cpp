@@ -136,4 +136,8 @@ TEST_CASE("sensor noise perturbs the gyro and orientation reads but gravity stay
     const double n = std::sqrt(double(b[45]) * b[45] + double(b[46]) * b[46] + double(b[47]) * b[47]);
     CHECK(std::fabs(n - 1.0) < 1e-5);
     for (int i = 0; i < 42; ++i) CHECK(a[i] == b[i]);    // noise touches only the IMU blocks
+    // each block draws with its own sensor's sd from the XML (robot_groundcontact.xml: gyro 0.005, framequat 0.001)
+    const ModelIndex ix = index_model(th::proto());
+    CHECK(ix.gyro_sd == 0.005);
+    CHECK(ix.quat_sd == 0.001);
 }
